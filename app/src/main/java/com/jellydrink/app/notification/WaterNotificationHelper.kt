@@ -1,0 +1,93 @@
+package com.jellydrink.app.notification
+
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.widget.RemoteViews
+import androidx.core.app.NotificationCompat
+import com.jellydrink.app.MainActivity
+import com.jellydrink.app.R
+
+object WaterNotificationHelper {
+
+    private const val CHANNEL_ID = "water_progress_channel"
+    private const val NOTIFICATION_ID = 1001
+
+    /**
+     * Crea il canale di notifica (necessario per Android 8.0+)
+     */
+    fun createNotificationChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Progresso Idratazione"
+            val descriptionText = "Mostra il progresso dell'obiettivo giornaliero di acqua"
+            val importance = NotificationManager.IMPORTANCE_LOW // Non fa suono/vibrazione
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+                setShowBadge(false)
+            }
+
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    /**
+     * Mostra o aggiorna la notifica persistente con il progresso
+     */
+    fun showWaterProgressNotification(
+        context: Context,
+        currentMl: Int,
+        goalMl: Int
+    ) {
+        createNotificationChannel(context)
+
+        val percentage = if (goalMl > 0) {
+            (currentMl.toFloat() / goalMl * 100).toInt().coerceIn(0, 100)
+        } else {
+            0
+        }
+
+        // Intent per aprire l'app quando si clicca sulla notifica
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Layout personalizzato per la notifica
+        val notificationLayout = RemoteViews(context.packageName, R.layout.notification_water_progress).apply {
+            setTextViewText(R.id.notification_percentage, "$percentage%")
+            setTextViewText(R.id.notification_text, "$currentMl / $goalMl ml")
+        }
+
+        // Costruisci la notifica
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_jellyfish) // Icona piccola nella barra
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(notificationLayout)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true) // Non può essere rimossa dall'utente
+            .setPriority(NotificationCompat.PRIORITY_LOW) // Non disturba
+            .setShowWhen(false)
+            .setAutoCancel(false)
+            .build()
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    /**
+     * Rimuove la notifica persistente
+     */
+    fun hideWaterProgressNotification(context: Context) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
+}

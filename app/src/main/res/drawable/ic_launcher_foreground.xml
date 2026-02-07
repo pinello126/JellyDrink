@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Ombra corpo -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.08"
+        android:pathData="M55,26 C40,26 30,35 30,48 C30,52 31,55 33,58 Q35,60 37,58 Q39,60 41,58 Q43,60 45,58 Q47,60 49,58 Q51,60 53,58 Q55,60 57,58 Q59,60 61,58 Q63,60 65,58 Q67,60 69,58 Q71,60 73,58 Q75,60 77,58 C79,55 80,52 80,48 C80,35 70,26 55,26 Z" />
+
+    <!-- Corpo medusa - gradiente 3D -->
+    <!-- Strato base rosa scuro -->
+    <path
+        android:fillColor="#E8609A"
+        android:pathData="M54,24 C39,24 29,34 29,47 C29,51 30,54 32,57 Q34,59 36,57 Q38,59 40,57 Q42,59 44,57 Q46,59 48,57 Q50,59 52,57 Q54,59 56,57 Q58,59 60,57 Q62,59 64,57 Q66,59 68,57 Q70,59 72,57 Q74,59 76,57 C78,54 79,51 79,47 C79,34 69,24 54,24 Z" />
+    <!-- Strato medio rosa -->
+    <path
+        android:fillColor="#FF8FB8"
+        android:pathData="M54,25 C40,25 31,34 31,46 C31,50 32,53 33.5,55.5 L35,55.5 Q36.5,57 38,55.5 Q39.5,57 41,55.5 Q42.5,57 44,55.5 Q45.5,57 47,55.5 Q48.5,57 50,55.5 Q51.5,57 53,55.5 Q54.5,57 56,55.5 Q57.5,57 59,55.5 Q60.5,57 62,55.5 Q63.5,57 65,55.5 Q66.5,57 68,55.5 Q69.5,57 71,55.5 Q72.5,57 74,55.5 L75,55.5 C76.5,53 77,50 77,46 C77,34 68,25 54,25 Z" />
+    <!-- Strato chiaro (highlight) -->
+    <path
+        android:fillColor="#FFB8D0"
+        android:pathData="M54,27 C42,27 34,34.5 34,44 C34,47 34.5,49 36,51 L72,51 C73.5,49 74,47 74,44 C74,34.5 66,27 54,27 Z" />
+
+    <!-- Riflesso lucido 3D grande -->
+    <path
+        android:fillColor="#FFE0EC"
+        android:fillAlpha="0.7"
+        android:pathData="M46,30 A10,7 -15 1,1 46,30.01 Z" />
+    <!-- Riflesso piccolo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.5"
+        android:pathData="M62,33 A4,3 0 1,1 62,33.01 Z" />
+
+    <!-- Macchie rosa scuro -->
+    <path
+        android:fillColor="#E05888"
+        android:fillAlpha="0.5"
+        android:pathData="M64,34 A3.5,3.5 0 1,1 64,34.01 Z" />
+    <path
+        android:fillColor="#E05888"
+        android:fillAlpha="0.4"
+        android:pathData="M43,37 A2.5,2.5 0 1,1 43,37.01 Z" />
+    <path
+        android:fillColor="#E05888"
+        android:fillAlpha="0.45"
+        android:pathData="M68,43 A2,2 0 1,1 68,43.01 Z" />
+    <path
+        android:fillColor="#E05888"
+        android:fillAlpha="0.35"
+        android:pathData="M49,32 A2,2 0 1,1 49,32.01 Z" />
+
+    <!-- Contorno corpo -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#6B2050"
+        android:strokeWidth="2"
+        android:pathData="M54,24 C39,24 29,34 29,47 C29,51 30,54 32,57 Q34,59 36,57 Q38,59 40,57 Q42,59 44,57 Q46,59 48,57 Q50,59 52,57 Q54,59 56,57 Q58,59 60,57 Q62,59 64,57 Q66,59 68,57 Q70,59 72,57 Q74,59 76,57 C78,54 79,51 79,47 C79,34 69,24 54,24 Z" />
+
+    <!-- Guance sfumate -->
+    <path
+        android:fillColor="#FF5588"
+        android:fillAlpha="0.45"
+        android:pathData="M38,49 A3.5,2.2 0 1,1 38,49.01 Z" />
+    <path
+        android:fillColor="#FF5588"
+        android:fillAlpha="0.45"
+        android:pathData="M70,49 A3.5,2.2 0 1,1 70,49.01 Z" />
+
+    <!-- Occhio sinistro bianco -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,42 A5.5,6 0 1,1 45,42.01 Z" />
+    <!-- Occhio sinistro iride -->
+    <path
+        android:fillColor="#2828A8"
+        android:pathData="M45.5,43.5 A3.2,3.8 0 1,1 45.5,43.51 Z" />
+    <!-- Occhio sinistro pupilla -->
+    <path
+        android:fillColor="#101040"
+        android:pathData="M46,44 A2,2.2 0 1,1 46,44.01 Z" />
+    <!-- Occhio sinistro riflesso grande -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.9"
+        android:pathData="M47,41 A1.5,1.5 0 1,1 47,41.01 Z" />
+    <!-- Occhio sinistro riflesso piccolo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.6"
+        android:pathData="M44,44.5 A0.8,0.8 0 1,1 44,44.51 Z" />
+    <!-- Contorno occhio sinistro -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#6B2050"
+        android:strokeWidth="1.2"
+        android:pathData="M45,42 A5.5,6 0 1,1 45,42.01 Z" />
+
+    <!-- Occhio destro bianco -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63,42 A5.5,6 0 1,1 63,42.01 Z" />
+    <!-- Occhio destro iride -->
+    <path
+        android:fillColor="#2828A8"
+        android:pathData="M63.5,43.5 A3.2,3.8 0 1,1 63.5,43.51 Z" />
+    <!-- Occhio destro pupilla -->
+    <path
+        android:fillColor="#101040"
+        android:pathData="M64,44 A2,2.2 0 1,1 64,44.01 Z" />
+    <!-- Occhio destro riflesso grande -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.9"
+        android:pathData="M65,41 A1.5,1.5 0 1,1 65,41.01 Z" />
+    <!-- Occhio destro riflesso piccolo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.6"
+        android:pathData="M62,44.5 A0.8,0.8 0 1,1 62,44.51 Z" />
+    <!-- Contorno occhio destro -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#6B2050"
+        android:strokeWidth="1.2"
+        android:pathData="M63,42 A5.5,6 0 1,1 63,42.01 Z" />
+
+    <!-- Bocca sorridente -->
+    <path
+        android:fillColor="#901050"
+        android:pathData="M49,50.5 C51,53.5 57,53.5 59,50.5 C57,52 51,52 49,50.5 Z" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#6B2050"
+        android:strokeWidth="1.3"
+        android:strokeLineCap="round"
+        android:pathData="M49,50.5 C51,53.5 57,53.5 59,50.5" />
+
+    <!-- Tentacoli con ombre -->
+    <!-- Ombre tentacoli -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeAlpha="0.06"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M37,58 Q34,68 37,78 Q40,85 36,91" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeAlpha="0.06"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M55,59 Q53,70 55,80 Q57,87 55,93" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeAlpha="0.06"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M73,58 Q76,68 73,78 Q70,85 74,91" />
+
+    <!-- Tentacolo 1 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#E870A8"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:pathData="M36,57 Q33,67 36,77 Q39,84 35,90" />
+    <!-- Tentacolo 2 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF98C0"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M42,57 Q39,69 42,79 Q44,85 41,92" />
+    <!-- Tentacolo 3 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#D05080"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:pathData="M48,57 Q46,68 49,77 Q51,83 48,89" />
+    <!-- Tentacolo 4 (centrale) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF98C0"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M54,58 Q52,69 54,79 Q56,86 54,93" />
+    <!-- Tentacolo 5 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#E870A8"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:pathData="M60,57 Q62,68 59,77 Q57,83 60,89" />
+    <!-- Tentacolo 6 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF98C0"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M66,57 Q69,69 66,79 Q64,85 67,92" />
+    <!-- Tentacolo 7 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#D05080"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:pathData="M72,57 Q75,67 72,77 Q69,84 73,90" />
+
+</vector>

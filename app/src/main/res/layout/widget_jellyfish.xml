@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="2dp">
+
+    <!-- ProgressBar verticale per il riempimento -->
+    <ProgressBar
+        android:id="@+id/widget_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp"
+        android:progressDrawable="@drawable/widget_fill_progress"
+        android:max="100"
+        android:progress="0"
+        android:rotation="180"
+        android:scaleY="-1" />
+
+    <!-- Medusa outline (sopra) -->
+    <ImageView
+        android:id="@+id/widget_jellyfish"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/widget_jellyfish_outline"
+        android:contentDescription="@string/jellyfish"
+        android:scaleType="fitCenter" />
+
+    <!-- Percentuale sovrapposta -->
+    <TextView
+        android:id="@+id/widget_percentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="0%"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#00CED1"
+        android:shadowColor="#FFFFFF"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="4"
+        tools:ignore="HardcodedText" />
+
+</FrameLayout>

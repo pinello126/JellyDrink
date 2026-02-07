@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JellyDrink</string>
+    <string name="widget_description">Mostra il progresso dell\'obiettivo giornaliero con la medusa</string>
+    <string name="jellyfish">Medusa</string>
+</resources>
