@@ -7,20 +7,7 @@
     android:background="@drawable/widget_background"
     android:padding="2dp">
 
-    <!-- ProgressBar verticale per il riempimento -->
-    <ProgressBar
-        android:id="@+id/widget_progress"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="8dp"
-        android:progressDrawable="@drawable/widget_fill_progress"
-        android:max="100"
-        android:progress="0"
-        android:rotation="180"
-        android:scaleY="-1" />
-
-    <!-- Medusa outline (sopra) -->
+    <!-- Medusa outline -->
     <ImageView
         android:id="@+id/widget_jellyfish"
         android:layout_width="match_parent"
@@ -29,20 +16,22 @@
         android:contentDescription="@string/jellyfish"
         android:scaleType="fitCenter" />
 
-    <!-- Percentuale sovrapposta -->
+    <!-- Percentuale SOTTO la medusa -->
     <TextView
         android:id="@+id/widget_percentage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="bottom|center_horizontal"
         android:text="0%"
-        android:textSize="12sp"
+        android:textSize="9sp"
         android:textStyle="bold"
-        android:textColor="#00CED1"
-        android:shadowColor="#FFFFFF"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:shadowRadius="4"
+        android:textColor="#FFFFFF"
+        android:background="#80000000"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:layout_marginBottom="1dp"
         tools:ignore="HardcodedText" />
 
 </FrameLayout>

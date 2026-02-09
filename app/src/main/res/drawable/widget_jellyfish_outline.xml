@@ -43,41 +43,41 @@
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
 
-    <!-- Tentacolo 1 (sinistro) -->
+    <!-- Tentacolo 1 (sinistro - ondulato) -->
     <path
-        android:pathData="M28,50 Q26,58 25,66 Q24,72 23,78"
+        android:pathData="M28,50 Q24,56 26,62 Q28,68 25,74 Q23,77 23,78"
         android:strokeColor="#6B6B6B"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
 
-    <!-- Tentacolo 2 -->
+    <!-- Tentacolo 2 (ondulato a sinistra) -->
     <path
-        android:pathData="M33,50 Q32,58 32,66 Q32,72 32,78"
+        android:pathData="M33,50 Q31,56 33,62 Q35,68 33,74 Q32,76 32,78"
         android:strokeColor="#6B6B6B"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
 
-    <!-- Tentacolo 3 (centrale) -->
+    <!-- Tentacolo 3 (centrale - leggermente ondulato) -->
     <path
-        android:pathData="M40,50 Q40,58 40,66 Q40,72 40,78"
+        android:pathData="M40,50 Q38,56 40,62 Q42,68 40,74 Q40,76 40,78"
         android:strokeColor="#6B6B6B"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
 
-    <!-- Tentacolo 4 -->
+    <!-- Tentacolo 4 (ondulato a destra) -->
     <path
-        android:pathData="M47,50 Q48,58 48,66 Q48,72 48,78"
+        android:pathData="M47,50 Q49,56 47,62 Q45,68 47,74 Q48,76 48,78"
         android:strokeColor="#6B6B6B"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:fillColor="#00000000" />
 
-    <!-- Tentacolo 5 (destro) -->
+    <!-- Tentacolo 5 (destro - ondulato) -->
     <path
-        android:pathData="M52,50 Q54,58 55,66 Q56,72 57,78"
+        android:pathData="M52,50 Q56,56 54,62 Q52,68 55,74 Q57,77 57,78"
         android:strokeColor="#6B6B6B"
         android:strokeWidth="2"
         android:strokeLineCap="round"
