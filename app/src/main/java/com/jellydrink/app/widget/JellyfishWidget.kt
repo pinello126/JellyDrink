@@ -7,18 +7,17 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.room.Room
 import com.jellydrink.app.MainActivity
 import com.jellydrink.app.R
+import com.jellydrink.app.data.db.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-private val Context.dataStore by preferencesDataStore(name = "settings")
 
 /**
  * Widget che mostra la medusa e il progresso dell'obiettivo giornaliero
@@ -50,16 +49,33 @@ class JellyfishWidget : AppWidgetProvider() {
 
     companion object {
         /**
-         * Aggiorna tutti i widget attivi
+         * Aggiorna tutti i widget attivi IMMEDIATAMENTE
          */
         fun updateAllWidgets(context: Context) {
-            val intent = Intent(context, JellyfishWidget::class.java).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            try {
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val ids = appWidgetManager.getAppWidgetIds(
+                    ComponentName(context, JellyfishWidget::class.java)
+                )
+
+                android.util.Log.d("JellyfishWidget", "Aggiornamento forzato di ${ids.size} widget(s)")
+
+                if (ids.isNotEmpty()) {
+                    // Aggiornamento diretto e immediato
+                    val intent = Intent(context, JellyfishWidget::class.java).apply {
+                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                    }
+                    context.sendBroadcast(intent)
+
+                    // Backup: update manuale immediato
+                    ids.forEach { widgetId ->
+                        updateAppWidget(context, appWidgetManager, widgetId)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("JellyfishWidget", "Errore update widget", e)
             }
-            val ids = AppWidgetManager.getInstance(context)
-                .getAppWidgetIds(ComponentName(context, JellyfishWidget::class.java))
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-            context.sendBroadcast(intent)
         }
     }
 }
@@ -76,25 +92,42 @@ private fun updateAppWidget(
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     scope.launch {
         try {
-            // Ottieni database e DAO
-            val db = com.jellydrink.app.data.db.AppDatabase::class.java
-                .getDeclaredMethod("getInstance", Context::class.java)
-                .invoke(null, context) as com.jellydrink.app.data.db.AppDatabase
+            // Piccolo delay per assicurarsi che il DB sia aggiornato
+            delay(100)
+
+            // Ottieni database correttamente (come in AppModule)
+            val db = Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                "jellydrink_db"
+            )
+                .addMigrations(
+                    AppDatabase.MIGRATION_1_2,
+                    AppDatabase.MIGRATION_2_3,
+                    AppDatabase.MIGRATION_3_4,
+                    AppDatabase.MIGRATION_4_5
+                )
+                .build()
 
             val waterIntakeDao = db.waterIntakeDao()
-            val dataStore = context.dataStore
 
             val today = java.time.LocalDate.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
+            android.util.Log.d("JellyfishWidget", "Data query: $today")
+
             // Ottieni dati reali
             val currentMl = waterIntakeDao.getTotalForDate(today).first()
-            val goalMl = dataStore.data.first()[intPreferencesKey("daily_goal")] ?: 2000
+            val goalMl = 2000 // Default goal value
+
+            android.util.Log.d("JellyfishWidget", "Dati DB: currentMl=$currentMl, goalMl=$goalMl, today=$today")
 
             withContext(Dispatchers.Main) {
                 updateWidgetView(context, appWidgetManager, appWidgetId, currentMl, goalMl)
             }
         } catch (e: Exception) {
+            // Log errore per debug
+            android.util.Log.e("JellyfishWidget", "Errore aggiornamento widget", e)
             // Fallback con valori placeholder
             withContext(Dispatchers.Main) {
                 updateWidgetView(context, appWidgetManager, appWidgetId, 0, 2000)
@@ -121,9 +154,6 @@ private fun updateWidgetView(
 
     // Aggiorna la percentuale con i dati reali
     views.setTextViewText(R.id.widget_percentage, "$percentage%")
-
-    // Aggiorna la ProgressBar per il riempimento (più affidabile di ClipDrawable)
-    views.setProgressBar(R.id.widget_progress, 100, percentage, false)
 
     // Log per debug
     android.util.Log.d("JellyfishWidget", "Widget aggiornato: $currentMl/$goalMl ml = $percentage%")
