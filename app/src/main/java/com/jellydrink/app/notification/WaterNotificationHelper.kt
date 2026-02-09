@@ -17,6 +17,18 @@ object WaterNotificationHelper {
     private const val NOTIFICATION_ID = 1001
 
     /**
+     * Converte ml in litri con precisione decimale
+     * Esempi: 240ml -> "0,24", 1270ml -> "1,27", 2000ml -> "2"
+     */
+    private fun mlToLitersFormatted(ml: Int): String {
+        val liters = ml / 1000.0
+        // Formatta con 2 decimali
+        val formatted = String.format("%.2f", liters)
+        // Rimuovi zeri finali e separatori decimali inutili (2,00 -> 2, 1,50 -> 1,5, 0,24 -> 0,24)
+        return formatted.trimEnd('0').trimEnd('.').trimEnd(',')
+    }
+
+    /**
      * Crea il canale di notifica (necessario per Android 8.0+)
      */
     fun createNotificationChannel(context: Context) {
@@ -64,7 +76,7 @@ object WaterNotificationHelper {
         // Layout personalizzato per la notifica
         val notificationLayout = RemoteViews(context.packageName, R.layout.notification_water_progress).apply {
             setTextViewText(R.id.notification_percentage, "$percentage%")
-            setTextViewText(R.id.notification_text, "$currentMl / $goalMl ml")
+            setTextViewText(R.id.notification_text, "${mlToLitersFormatted(currentMl)} / ${mlToLitersFormatted(goalMl)} L")
         }
 
         // Costruisci la notifica

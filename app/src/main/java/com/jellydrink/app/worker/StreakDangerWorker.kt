@@ -18,14 +18,7 @@ class StreakDangerWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val todayTotal = repository.getTodayTotal().first()
-        val goal = repository.getDailyGoal().first()
-
-        // If goal not met by evening, show warning
-        if (todayTotal < goal) {
-            NotificationHelper.showStreakDangerNotification(context)
-        }
-
+        // Streak danger notifications disabled (keeping only lock screen notification)
         return Result.success()
     }
 }

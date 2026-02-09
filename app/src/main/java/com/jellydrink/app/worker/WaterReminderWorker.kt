@@ -16,13 +16,7 @@ class WaterReminderWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val currentHour = LocalTime.now().hour
-
-        // Only show notifications between 8:00 and 22:00
-        if (currentHour in 8..21) {
-            NotificationHelper.showWaterReminderNotification(context)
-        }
-
+        // Popup reminder notifications disabled (keeping only lock screen notification)
         return Result.success()
     }
 }
