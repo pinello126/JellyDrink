@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import com.jellydrink.app.data.db.entity.DecorationEntity
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -167,6 +168,37 @@ fun AquariumBackground(
         label = "fishPhase5"
     )
 
+    // Fasi dedicate cavalluccio marino — periodi primi, drift verticale gentile
+    val seahorsePhaseA by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(37013, easing = LinearEasing), RepeatMode.Restart),
+        label = "shA"
+    )
+    val seahorsePhaseB by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(50021, easing = LinearEasing), RepeatMode.Restart),
+        label = "shB"
+    )
+    val seahorsePhaseC by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(67003, easing = LinearEasing), RepeatMode.Restart),
+        label = "shC"
+    )
+
+    // Fase dedicata granchio — ciclo ~20s (scatto ogni ~10s, poi pausa)
+    val crabPhase by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(20011, easing = LinearEasing), RepeatMode.Restart),
+        label = "crabP"
+    )
+
+    // Fase dedicata per animazioni nuoto pesci (coda, pinne) — indipendente da time
+    val swimPhase by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(3001, easing = LinearEasing), RepeatMode.Restart),
+        label = "swim"
+    )
+
     // Derived smooth values using pure trigonometry (no multipliers on phase!)
     val time = phase1
     val slowTime = phaseSlow
@@ -263,13 +295,15 @@ fun AquariumBackground(
             val topWidth = w * (0.03f + (i % 3) * 0.015f)
             val botWidth = w * (0.10f + (i % 3) * 0.04f)
             val rayLength = h * (0.60f + (i % 2) * 0.15f)
-            val alpha = 0.020f + (i % 2) * 0.012f + sin(slowTime + i * 1.2f) * 0.005f
+            val alpha = 0.020f + (i % 2) * 0.012f + sin(phase4 + i * 1.2f) * 0.005f
 
+            // Usa phase4 (25s) direttamente — nessun moltiplicatore, zero scatti
+            val raySway = sin(phase4 + i * 0.9f) * 12f
             val rayPath = Path().apply {
                 moveTo(baseX - topWidth, 0f)
                 lineTo(baseX + topWidth, 0f)
-                lineTo(baseX + botWidth + sin(slowTime * 0.5f + i) * 12f, rayLength)
-                lineTo(baseX - botWidth + sin(slowTime * 0.5f + i) * 12f, rayLength)
+                lineTo(baseX + botWidth + raySway, rayLength)
+                lineTo(baseX - botWidth + raySway, rayLength)
                 close()
             }
             drawPath(rayPath, LightRayColor.copy(alpha = alpha))
@@ -278,8 +312,8 @@ fun AquariumBackground(
             val glowPath = Path().apply {
                 moveTo(baseX - topWidth * 2f, 0f)
                 lineTo(baseX + topWidth * 2f, 0f)
-                lineTo(baseX + botWidth * 1.5f + sin(slowTime * 0.5f + i) * 12f, rayLength * 0.8f)
-                lineTo(baseX - botWidth * 1.5f + sin(slowTime * 0.5f + i) * 12f, rayLength * 0.8f)
+                lineTo(baseX + botWidth * 1.5f + raySway, rayLength * 0.8f)
+                lineTo(baseX - botWidth * 1.5f + raySway, rayLength * 0.8f)
                 close()
             }
             drawPath(glowPath, LightRayColor.copy(alpha = alpha * 0.3f))
@@ -294,7 +328,7 @@ fun AquariumBackground(
             for (i in 0 until dunes) {
                 val x1 = i * duneW + duneW * 0.5f
                 val x2 = (i + 1) * duneW
-                val yVar = sin(slowTime * 0.15f + i * 0.6f) * 3f
+                val yVar = sin(phase4 + i * 0.6f) * 3f
                 quadraticTo(x1, sandTop - 6f - (i % 3) * 3f + yVar, x2, sandTop + (i % 2) * 2f)
             }
             lineTo(w, h)
@@ -398,8 +432,8 @@ fun AquariumBackground(
 
         // === PARTICELLE FLUTTUANTI (plankton/detriti) ===
         particles.forEach { p ->
-            val px = ((p.x + sin(slowTime * 0.4f + p.phase) * 0.02f + slowTime * p.speedX) % 1f + 1f) % 1f
-            val py = ((p.y + cos(slowTime * 0.3f + p.phase) * 0.015f + slowTime * p.speedY) % 0.85f + 0.85f) % 0.85f + 0.03f
+            val px = ((p.x + sin(phase3 + p.phase) * 0.02f + slowTime * p.speedX) % 1f + 1f) % 1f
+            val py = ((p.y + cos(phase4 + p.phase) * 0.015f + slowTime * p.speedY) % 0.85f + 0.85f) % 0.85f + 0.03f
             val pAlpha = 0.15f + sin(time + p.phase) * 0.08f
             drawCircle(
                 color = Color.White.copy(alpha = pAlpha),
@@ -420,70 +454,93 @@ fun AquariumBackground(
             when (deco.id) {
                 // FISH - Movimento ultra-fluido con 5 fasi lente (67-127 secondi)
                 "fish_blue", "fish_orange", "turtle" -> {
-                    // MOVIMENTO SU TUTTO LO SCHERMO - Cicli lunghissimi
-                    // Usa le 5 fishPhases che vanno da 0 a 2π in 67-127 secondi
+                    // Pesci — nuoto prevalentemente orizzontale, realistico
 
-                    // ORIZZONTALE - combina tutte e 5 le fasi per massima complessità
-                    val driftX1 = sin(fishPhase1 + phaseOffset) * 0.30f
-                    val driftX2 = sin(fishPhase2 + phaseOffset * 1.618f) * 0.18f
+                    // ORIZZONTALE — ampiezza grande, il pesce attraversa lo schermo
+                    val driftX1 = sin(fishPhase1 + phaseOffset) * 0.32f
+                    val driftX2 = sin(fishPhase2 + phaseOffset * 1.618f) * 0.20f
                     val driftX3 = cos(fishPhase3 + phaseOffset * 2.414f) * 0.12f
                     val driftX4 = sin(fishPhase4 + phaseOffset * 1.732f) * 0.08f
-                    val driftX5 = cos(fishPhase5 + phaseOffset * 3.141f) * 0.05f
 
-                    // VERTICALE - fasi sfalsate per movimento indipendente
-                    val driftY1 = cos(fishPhase2 + phaseOffset * 1.414f) * 0.20f
-                    val driftY2 = cos(fishPhase3 + phaseOffset * 2.236f) * 0.12f
-                    val driftY3 = sin(fishPhase1 + phaseOffset * 1.902f) * 0.10f
-                    val driftY4 = cos(fishPhase4 + phaseOffset * 2.645f) * 0.06f
-                    val driftY5 = sin(fishPhase5 + phaseOffset * 3.873f) * 0.04f
+                    // VERTICALE — ampiezza ridotta, i pesci non salgono/scendono molto
+                    val driftY1 = cos(fishPhase2 + phaseOffset * 1.414f) * 0.08f
+                    val driftY2 = cos(fishPhase3 + phaseOffset * 2.236f) * 0.05f
+                    val driftY3 = sin(fishPhase4 + phaseOffset * 1.902f) * 0.03f
 
-                    // Centro unico per ogni pesce (NO modulo!)
                     val fishCenterX = 0.20f + sin(phaseOffset) * 0.25f
-                    val fishCenterY = 0.45f + cos(phaseOffset * 1.3f) * 0.15f
+                    val fishCenterY = 0.45f + cos(phaseOffset * 1.3f) * 0.12f
 
-                    // POSIZIONE FINALE - somma TUTTO
-                    val totalDriftX = driftX1 + driftX2 + driftX3 + driftX4 + driftX5
-                    val totalDriftY = driftY1 + driftY2 + driftY3 + driftY4 + driftY5
+                    val totalDriftX = driftX1 + driftX2 + driftX3 + driftX4
+                    val totalDriftY = driftY1 + driftY2 + driftY3
 
-                    // Movimento libero in TUTTO lo schermo (margini minimi)
-                    val fishX = (w * (fishCenterX + totalDriftX)).coerceIn(w * 0.05f, w * 0.95f)
-                    val fishY = (h * (fishCenterY + totalDriftY)).coerceIn(h * 0.25f, h * 0.75f)
+                    val fishX = w * (fishCenterX + totalDriftX)
+                    val fishY = (h * (fishCenterY + totalDriftY)).coerceIn(h * 0.20f, h * 0.80f)
 
                     // Direzione basata su velocità reale
                     val velocityX = cos(fishPhase1 + phaseOffset)
                     val direction = if (velocityX > 0) 1f else -1f
 
                     when (deco.id) {
-                        "fish_blue" -> drawRealisticBlueFish(fishX, fishY, 40f, time, index, direction)
-                        "fish_orange" -> drawRealisticClownfish(fishX, fishY, 40f, time, index, direction)
+                        "fish_blue" -> drawRealisticBlueFish(fishX, fishY, 40f, swimPhase, index, direction)
+                        "fish_orange" -> drawRealisticClownfish(fishX, fishY, 40f, swimPhase, index, direction)
                         "turtle" -> drawRealisticTurtle(fishX, fishY, 45f, time, index, direction)
                     }
                 }
 
-                // SEAHORSE - Gentle swaying motion
+                // SEAHORSE — drift verticale gentile, simile alla medusa
                 "seahorse" -> {
-                    val swayX = sin(time + phaseOffset) * 0.08f
-                    val swayY = cos(time * 0.6f + phaseOffset) * 0.1f
-                    val seahorseX = w * (baseX + swayX)
-                    val seahorseY = h * (baseY + swayY)
-                    drawRealisticSeahorse(seahorseX, seahorseY, 42f, time, index)
+                    // Movimento orizzontale — copre tutto lo schermo come i pesci
+                    val shDriftX1 = sin(seahorsePhaseA + phaseOffset) * 0.22f
+                    val shDriftX2 = sin(seahorsePhaseB + phaseOffset * 1.618f) * 0.14f
+                    val shDriftX3 = cos(seahorsePhaseC + phaseOffset * 2.414f) * 0.08f
+
+                    // Movimento verticale pronunciato (galleggia nella realtà)
+                    val shDriftY1 = cos(seahorsePhaseA + phaseOffset * 1.414f) * 0.16f
+                    val shDriftY2 = cos(seahorsePhaseB + phaseOffset * 2.236f) * 0.10f
+                    val shDriftY3 = sin(seahorsePhaseC + phaseOffset * 1.732f) * 0.06f
+
+                    val shCenterX = 0.45f + sin(phaseOffset) * 0.10f
+                    val shCenterY = 0.45f + cos(phaseOffset * 1.3f) * 0.10f
+
+                    val seahorseX = w * (shCenterX + shDriftX1 + shDriftX2 + shDriftX3)
+                    val seahorseY = h * (shCenterY + shDriftY1 + shDriftY2 + shDriftY3)
+
+                    drawRealisticSeahorse(
+                        seahorseX, seahorseY, 42f,
+                        seahorsePhaseA, seahorsePhaseB, index
+                    )
                 }
 
                 // BOTTOM DECORATIONS - Static or minimal movement
                 "starfish" -> {
                     val starX = w * baseX
-                    val starY = sandTop + 8f + sin(time * 0.3f + index) * 2f
+                    val starY = sandTop + 8f + sin(phase4 + index) * 2f
                     drawStarfish(starX, starY, 18f, StarfishOrange, StarfishDark)
                 }
                 "coral_pink" -> {
                     drawCoral(w * baseX, sandTop - 10f, 18f, CoralPink, time)
                 }
                 "treasure" -> {
-                    drawTreasureChest(w * baseX, sandTop - 8f, 30f, time)
+                    drawTreasureChest(w * baseX, sandTop - 8f, 30f, phase2)
                 }
                 "crab" -> {
-                    val crabX = w * baseX + sin(time * 0.5f + index) * 15f
-                    drawRealisticCrab(crabX, sandTop + 5f, 22f, time)
+                    // Staircase: due onde atan a frequenze diverse creano
+                    // tanti piccoli spostamenti con pause in mezzo
+                    val k = 3f  // k basso = camminata, non scatto
+                    val atanK = atan(k)
+
+                    // Step 1 (~20s): piccoli movimenti frequenti
+                    val step1 = atan(k * sin(crabPhase + phaseOffset)) / atanK
+                    // Step 2 (~67s): drift lento complessivo
+                    val step2 = atan(k * sin(fishPhase1 + phaseOffset * 1.414f)) / atanK
+
+                    // Tratti brevi (0.12) + drift lento (0.18)
+                    val crabX = w * (0.5f + step1 * 0.12f + step2 * 0.18f)
+
+                    // WalkSpeed: alto quando step1 è in transizione, basso in pausa
+                    val walkSpeed = ((1f - step1 * step1) * 1.5f).coerceIn(0f, 1f)
+
+                    drawRealisticCrab(crabX, sandTop + 5f, 35f, time, walkSpeed)
                 }
             }
         }
@@ -992,7 +1049,7 @@ private fun DrawScope.drawStarfish(cx: Float, cy: Float, size: Float, mainColor:
 
 // --- Treasure Chest ---
 private fun DrawScope.drawTreasureChest(cx: Float, cy: Float, size: Float, time: Float) {
-    val openAmount = (sin(time * 0.5f) * 0.5f + 0.5f) * 0.3f
+    val openAmount = (sin(time) * 0.5f + 0.5f) * 0.3f
 
     // Box
     drawRect(
@@ -1030,7 +1087,7 @@ private fun DrawScope.drawTreasureChest(cx: Float, cy: Float, size: Float, time:
 
 // --- Turtle ---
 private fun DrawScope.drawTurtle(cx: Float, cy: Float, size: Float, time: Float, index: Int) {
-    val swimPhase = sin(time * 1.5f + index) * 0.15f
+    val swimPhase = sin(time * 2f + index) * 0.15f
 
     // Shell
     drawOval(
@@ -1212,12 +1269,15 @@ private fun DrawScope.drawCrab(cx: Float, cy: Float, size: Float, time: Float) {
 }
 
 // --- Realistic Blue Fish (Cartoon 3D Style like Fishdom) ---
-private fun DrawScope.drawRealisticBlueFish(cx: Float, cy: Float, size: Float, time: Float, index: Int, direction: Float = 1f) {
-    // Swimming animation - smooth continuous motion
+private fun DrawScope.drawRealisticBlueFish(cx: Float, cy: Float, size: Float, swimPhase: Float, index: Int, direction: Float = 1f) {
+    // Animazioni nuoto — swimPhase va 0→2π in 3s, perfettamente fluido
     val phaseOffset = index * 3.7f
-    val tailWag = sin(time * 2f + phaseOffset) * 0.3f
-    val bodyBounce = sin(time * 1.5f + phaseOffset) * 0.08f
-    val finFlap = sin(time * 2.5f + phaseOffset) * 0.4f
+    // Coda: oscillazione rapida (2× = intero, sin(4π)=0, seamless)
+    val tailWag = sin(swimPhase * 2f + phaseOffset) * 0.3f
+    // Corpo: bobbing gentile, usa la fase direttamente (nessun moltiplicatore)
+    val bodyBounce = sin(swimPhase + phaseOffset + 1.2f) * 0.06f
+    // Pinne: battito, 3× = intero (sin(6π)=0, seamless)
+    val finFlap = sin(swimPhase * 3f + phaseOffset) * 0.4f
 
     // Colors - Turquoise/Cyan with yellow accents
     val bodyMainColor = Color(0xFF00CED1) // Turquoise
@@ -1616,12 +1676,15 @@ private fun DrawScope.drawRealisticBlueFish(cx: Float, cy: Float, size: Float, t
 }
 
 // --- Realistic Clownfish (Orange with white stripes) ---
-private fun DrawScope.drawRealisticClownfish(cx: Float, cy: Float, size: Float, time: Float, index: Int, direction: Float = 1f) {
-    // Swimming animation
+private fun DrawScope.drawRealisticClownfish(cx: Float, cy: Float, size: Float, swimPhase: Float, index: Int, direction: Float = 1f) {
+    // Animazioni nuoto — swimPhase va 0→2π in 3s, perfettamente fluido
     val phaseOffset = index * 4.2f
-    val tailWag = sin(time * 2f + phaseOffset) * 0.35f
-    val bodyBounce = sin(time * 1.5f + phaseOffset) * 0.08f
-    val finFlap = sin(time * 2.5f + phaseOffset) * 0.4f
+    // Coda: oscillazione rapida (2× = intero, seamless)
+    val tailWag = sin(swimPhase * 2f + phaseOffset) * 0.35f
+    // Corpo: bobbing gentile
+    val bodyBounce = sin(swimPhase + phaseOffset + 0.8f) * 0.06f
+    // Pinne: battito (3× = intero, seamless)
+    val finFlap = sin(swimPhase * 3f + phaseOffset) * 0.4f
 
     // Colors - Orange/Red with white stripes
     val bodyOrange = Color(0xFFFF6B35) // Bright orange
@@ -1902,8 +1965,8 @@ private fun DrawScope.drawRealisticClownfish(cx: Float, cy: Float, size: Float, 
 // --- Realistic Turtle (Cartoon 3D) ---
 private fun DrawScope.drawRealisticTurtle(cx: Float, cy: Float, size: Float, time: Float, index: Int, direction: Float = 1f) {
     val phaseOffset = index * 3.9f
-    val flipperFlap = sin(time * 1.8f + phaseOffset) * 0.35f
-    val bodyBounce = sin(time * 1.2f + phaseOffset) * 0.06f
+    val flipperFlap = sin(time * 2f + phaseOffset) * 0.35f
+    val bodyBounce = sin(time + phaseOffset) * 0.06f
 
     val shellGreen = Color(0xFF2E7D32) // Dark green
     val shellLight = Color(0xFF66BB6A) // Light green
@@ -2042,10 +2105,14 @@ private fun DrawScope.drawRealisticTurtle(cx: Float, cy: Float, size: Float, tim
 }
 
 // --- Realistic Seahorse (Cartoon 3D) ---
-private fun DrawScope.drawRealisticSeahorse(cx: Float, cy: Float, size: Float, time: Float, index: Int) {
+private fun DrawScope.drawRealisticSeahorse(
+    cx: Float, cy: Float, size: Float,
+    phaseA: Float, phaseB: Float, index: Int
+) {
     val phaseOffset = index * 4.1f
-    val sway = sin(time + phaseOffset) * size * 0.15f
-    val tailCurl = sin(time * 0.8f + phaseOffset) * 0.3f
+    // Sway dolce senza moltiplicatori — perfettamente fluido
+    val sway = sin(phaseA + phaseOffset) * size * 0.12f
+    val tailCurl = sin(phaseB + phaseOffset) * 0.3f
 
     val bodyYellow = Color(0xFFFDD835) // Golden yellow
     val bodyOrange = Color(0xFFFFB74D) // Light orange
@@ -2187,13 +2254,17 @@ private fun DrawScope.drawRealisticSeahorse(cx: Float, cy: Float, size: Float, t
 }
 
 // --- Realistic Crab (Cartoon 3D) ---
-private fun DrawScope.drawRealisticCrab(cx: Float, cy: Float, size: Float, time: Float) {
-    val clawMove = sin(time * 2f) * 0.15f
-    val eyeWave = sin(time * 1.5f) * 0.08f
+private fun DrawScope.drawRealisticCrab(cx: Float, cy: Float, size: Float, time: Float, walkSpeed: Float = 0.5f) {
+    // Chele: oscillazione gentile, più ampia quando cammina
+    val clawMove = sin(time) * (0.03f + walkSpeed * 0.08f)
+    val eyeWave = sin(time * 3f) * 0.04f
 
-    val crabRed = Color(0xFFE53935) // Bright red
-    val crabDark = Color(0xFFC62828) // Dark red
-    val crabLight = Color(0xFFFF6F60) // Light red/coral
+    // Zampe: ritmo di camminata proporzionale alla velocità
+    val legCycle = time * 2f  // ciclo zampe (2× = intero, seamless)
+
+    val crabRed = Color(0xFFE53935)
+    val crabDark = Color(0xFFC62828)
+    val crabLight = Color(0xFFFF6F60)
 
     // Shadow
     drawOval(
@@ -2201,6 +2272,37 @@ private fun DrawScope.drawRealisticCrab(cx: Float, cy: Float, size: Float, time:
         topLeft = Offset(cx - size * 0.7f, cy + size * 0.15f),
         size = Size(size * 1.4f, size * 0.4f)
     )
+
+    // === LEGS (behind body, walking animation) ===
+    for (i in 0..2) {
+        for (side in listOf(-1f, 1f)) {
+            val legBaseX = cx + side * (size * 0.35f + i * size * 0.14f)
+            val legMidX = cx + side * (size * 0.55f + i * size * 0.14f)
+            // Zampe alternate: pari avanti quando dispari indietro
+            val legPhase = legCycle + i * 2.1f + (if (side > 0) 0f else PI.toFloat())
+            val legLift = sin(legPhase) * size * 0.08f * walkSpeed
+            val legStride = cos(legPhase) * size * 0.06f * walkSpeed
+            val legEndX = legMidX + side * size * 0.18f + legStride
+            val legY = cy + size * 0.05f
+
+            // Segmento superiore (femore)
+            drawLine(
+                color = crabRed.copy(alpha = 0.85f),
+                start = Offset(legBaseX, legY),
+                end = Offset(legMidX + legStride * 0.5f, legY + size * 0.12f - legLift),
+                strokeWidth = size * 0.07f,
+                cap = StrokeCap.Round
+            )
+            // Segmento inferiore (tibia)
+            drawLine(
+                color = crabDark.copy(alpha = 0.8f),
+                start = Offset(legMidX + legStride * 0.5f, legY + size * 0.12f - legLift),
+                end = Offset(legEndX, legY + size * 0.28f),
+                strokeWidth = size * 0.05f,
+                cap = StrokeCap.Round
+            )
+        }
+    }
 
     // === BODY (oval shell) ===
     drawOval(
@@ -2213,50 +2315,30 @@ private fun DrawScope.drawRealisticCrab(cx: Float, cy: Float, size: Float, time:
         size = Size(size * 1.2f, size * 0.7f)
     )
 
-    // Body spots/pattern
+    // Body spots
     for (i in 0..3) {
         val spotX = cx - size * 0.3f + (i % 2) * size * 0.3f
         val spotY = cy - size * 0.25f + (i / 2) * size * 0.2f
-        drawCircle(
-            crabDark.copy(alpha = 0.3f),
-            size * 0.08f,
-            Offset(spotX, spotY)
-        )
+        drawCircle(crabDark.copy(alpha = 0.3f), size * 0.08f, Offset(spotX, spotY))
     }
 
     // === EYES ON STALKS ===
     for (side in listOf(-1f, 1f)) {
         val eyeStalkX = cx + side * size * 0.3f
-        // Stalk
+        val eyeTopY = cy - size * 0.6f + eyeWave * size
         drawLine(
             brush = Brush.linearGradient(
-                colors = listOf(crabRed, crabLight),
+                listOf(crabRed, crabLight),
                 start = Offset(eyeStalkX, cy - size * 0.3f),
-                end = Offset(eyeStalkX + side * size * 0.08f, cy - size * 0.6f + eyeWave * size)
+                end = Offset(eyeStalkX + side * size * 0.08f, eyeTopY)
             ),
             start = Offset(eyeStalkX, cy - size * 0.3f),
-            end = Offset(eyeStalkX + side * size * 0.08f, cy - size * 0.6f + eyeWave * size),
-            strokeWidth = size * 0.12f,
-            cap = StrokeCap.Round
+            end = Offset(eyeStalkX + side * size * 0.08f, eyeTopY),
+            strokeWidth = size * 0.12f, cap = StrokeCap.Round
         )
-        // Eye ball
-        drawCircle(
-            Color.White,
-            size * 0.14f,
-            Offset(eyeStalkX + side * size * 0.08f, cy - size * 0.62f + eyeWave * size)
-        )
-        // Pupil
-        drawCircle(
-            Color.Black,
-            size * 0.08f,
-            Offset(eyeStalkX + side * size * 0.11f, cy - size * 0.62f + eyeWave * size)
-        )
-        // Shine
-        drawCircle(
-            Color.White.copy(alpha = 0.8f),
-            size * 0.04f,
-            Offset(eyeStalkX + side * size * 0.12f, cy - size * 0.65f + eyeWave * size)
-        )
+        drawCircle(Color.White, size * 0.14f, Offset(eyeStalkX + side * size * 0.08f, eyeTopY - size * 0.02f))
+        drawCircle(Color.Black, size * 0.08f, Offset(eyeStalkX + side * size * 0.11f, eyeTopY - size * 0.02f))
+        drawCircle(Color.White.copy(alpha = 0.8f), size * 0.04f, Offset(eyeStalkX + side * size * 0.12f, eyeTopY - size * 0.05f))
     }
 
     // === CLAWS (pincers) ===
@@ -2267,22 +2349,20 @@ private fun DrawScope.drawRealisticCrab(cx: Float, cy: Float, size: Float, time:
         // Arm
         drawLine(
             brush = Brush.linearGradient(
-                colors = listOf(crabRed, crabDark),
+                listOf(crabRed, crabDark),
                 start = Offset(cx + side * size * 0.5f, cy - size * 0.05f),
                 end = Offset(clawX, cy - size * 0.15f)
             ),
             start = Offset(cx + side * size * 0.5f, cy - size * 0.05f),
             end = Offset(clawX, cy - size * 0.15f),
-            strokeWidth = size * 0.18f,
-            cap = StrokeCap.Round
+            strokeWidth = size * 0.18f, cap = StrokeCap.Round
         )
 
         // Top pincer
         drawOval(
             brush = Brush.radialGradient(
-                colors = listOf(crabLight, crabDark),
-                center = Offset(clawX, cy - size * 0.3f),
-                radius = size * 0.25f
+                listOf(crabLight, crabDark),
+                center = Offset(clawX, cy - size * 0.3f), radius = size * 0.25f
             ),
             topLeft = Offset(clawX - size * 0.2f, cy - size * 0.4f + clawOpenAngle * size),
             size = Size(size * 0.4f, size * 0.22f)
@@ -2291,29 +2371,11 @@ private fun DrawScope.drawRealisticCrab(cx: Float, cy: Float, size: Float, time:
         // Bottom pincer
         drawOval(
             brush = Brush.radialGradient(
-                colors = listOf(crabLight, crabDark),
-                center = Offset(clawX, cy),
-                radius = size * 0.25f
+                listOf(crabLight, crabDark),
+                center = Offset(clawX, cy), radius = size * 0.25f
             ),
             topLeft = Offset(clawX - size * 0.2f, cy - size * 0.08f - clawOpenAngle * size),
             size = Size(size * 0.4f, size * 0.22f)
         )
-    }
-
-    // === LEGS (walking legs) ===
-    for (i in 0..2) {
-        for (side in listOf(-1f, 1f)) {
-            val legBaseX = cx + side * (size * 0.4f + i * size * 0.12f)
-            val legEndX = cx + side * (size * 0.65f + i * size * 0.15f)
-            val legY = cy + size * 0.08f
-
-            drawLine(
-                color = crabRed.copy(alpha = 0.85f),
-                start = Offset(legBaseX, legY),
-                end = Offset(legEndX, legY + size * 0.25f),
-                strokeWidth = size * 0.08f,
-                cap = StrokeCap.Round
-            )
-        }
     }
 }

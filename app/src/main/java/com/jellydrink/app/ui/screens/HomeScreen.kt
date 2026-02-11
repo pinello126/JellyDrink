@@ -42,7 +42,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -278,16 +285,13 @@ fun HomeScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            // Icone bicchiere/lattina/bottiglia
-                            Text(
-                                text = when {
-                                    amount >= 1000 -> "🍾" // Bottiglia
-                                    amount >= 500 -> "🥤"  // Lattina/bicchiere medio
-                                    else -> "🥛"           // Bicchiere piccolo
-                                },
-                                fontSize = 24.sp
-                            )
-                            // Formato in litri
+                            Canvas(modifier = Modifier.size(32.dp)) {
+                                when {
+                                    amount >= 1000 -> drawWaterBottleLarge()
+                                    amount >= 500 -> drawWaterBottleSmall()
+                                    else -> drawWaterGlass()
+                                }
+                            }
                             Text(
                                 text = when {
                                     amount % 1000 == 0 -> "${amount / 1000}L"
@@ -363,4 +367,215 @@ fun HomeScreen(
             }
         }
     }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ICONE ACQUA — Canvas-drawn, stile moderno
+// ═══════════════════════════════════════════════════════════════
+
+private val WaterBlue = Color(0xFF4FC3F7)
+private val WaterBlueDark = Color(0xFF0288D1)
+private val WaterBlueLight = Color(0xFFB3E5FC)
+private val GlassBody = Color(0xFFE0F7FA)
+private val GlassStroke = Color(0xFFFFFFFF)
+private val BottleCap = Color(0xFFFFFFFF)
+private val BottleBody = Color(0xFFE0F7FA)
+
+// 0.2L — Bicchiere d'acqua (compatto)
+private fun DrawScope.drawWaterGlass() {
+    val w = size.width
+    val h = size.height
+    val cx = w / 2f
+
+    val glassTop = h * 0.28f
+    val glassBot = h * 0.90f
+    val topHalf = w * 0.28f
+    val botHalf = w * 0.20f
+
+    val glassPath = Path().apply {
+        moveTo(cx - topHalf, glassTop)
+        lineTo(cx - botHalf, glassBot)
+        lineTo(cx + botHalf, glassBot)
+        lineTo(cx + topHalf, glassTop)
+        close()
+    }
+
+    drawPath(
+        glassPath,
+        brush = Brush.verticalGradient(
+            listOf(GlassBody.copy(alpha = 0.3f), GlassBody.copy(alpha = 0.15f)),
+            startY = glassTop, endY = glassBot
+        )
+    )
+
+    // Acqua (~70%)
+    val waterTop = glassTop + (glassBot - glassTop) * 0.30f
+    val waterTopHalf = botHalf + (topHalf - botHalf) * (1f - 0.30f)
+    val waterPath = Path().apply {
+        moveTo(cx - waterTopHalf, waterTop)
+        lineTo(cx - botHalf, glassBot)
+        lineTo(cx + botHalf, glassBot)
+        lineTo(cx + waterTopHalf, waterTop)
+        close()
+    }
+    drawPath(
+        waterPath,
+        brush = Brush.verticalGradient(
+            listOf(WaterBlueLight, WaterBlue, WaterBlueDark),
+            startY = waterTop, endY = glassBot
+        )
+    )
+
+    // Riflesso acqua
+    drawLine(
+        Color.White.copy(alpha = 0.5f),
+        Offset(cx - waterTopHalf * 0.6f, waterTop + 3f),
+        Offset(cx + waterTopHalf * 0.3f, waterTop + 2f),
+        strokeWidth = 1.5f, cap = StrokeCap.Round
+    )
+
+    // Contorno
+    drawPath(
+        glassPath, GlassStroke.copy(alpha = 0.7f),
+        style = Stroke(2f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+    )
+
+    // Riflesso vetro
+    drawLine(
+        Color.White.copy(alpha = 0.4f),
+        Offset(cx - topHalf + 2f, glassTop + 3f),
+        Offset(cx - botHalf + 1.5f, glassBot - 3f),
+        strokeWidth = 1.5f, cap = StrokeCap.Round
+    )
+}
+
+// 0.5L — Bottiglietta d'acqua (slanciata, stile vetro)
+private fun DrawScope.drawWaterBottleSmall() {
+    val w = size.width
+    val h = size.height
+    val cx = w / 2f
+
+    // Tappo piccolo
+    val capTop = h * 0.0f
+    val capBot = h * 0.08f
+    val capHalf = w * 0.09f
+    drawRect(BottleCap, Offset(cx - capHalf, capTop), Size(capHalf * 2f, capBot - capTop))
+
+    // Collo
+    val neckTop = capBot
+    val neckBot = h * 0.26f
+    val neckHalf = w * 0.06f
+    drawRect(BottleBody.copy(alpha = 0.4f), Offset(cx - neckHalf, neckTop), Size(neckHalf * 2f, neckBot - neckTop))
+
+    // Corpo stretto e allungato
+    val bodyTop = neckBot
+    val bodyBot = h * 0.97f
+    val bodyHalf = w * 0.18f
+
+    val bodyPath = Path().apply {
+        moveTo(cx - neckHalf, neckBot)
+        cubicTo(cx - bodyHalf, neckBot, cx - bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.06f,
+                cx - bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.12f)
+        lineTo(cx - bodyHalf, bodyBot)
+        lineTo(cx + bodyHalf, bodyBot)
+        lineTo(cx + bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.12f)
+        cubicTo(cx + bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.06f,
+                cx + bodyHalf, neckBot, cx + neckHalf, neckBot)
+        close()
+    }
+
+    drawPath(bodyPath, brush = Brush.verticalGradient(
+        listOf(BottleBody.copy(alpha = 0.3f), BottleBody.copy(alpha = 0.15f)),
+        startY = bodyTop, endY = bodyBot
+    ))
+
+    // Acqua (~75%)
+    val waterTop = bodyTop + (bodyBot - bodyTop) * 0.25f
+    drawRect(
+        brush = Brush.verticalGradient(listOf(WaterBlueLight, WaterBlue, WaterBlueDark), startY = waterTop, endY = bodyBot),
+        topLeft = Offset(cx - bodyHalf, waterTop),
+        size = Size(bodyHalf * 2f, bodyBot - waterTop)
+    )
+
+    // Riflesso acqua
+    drawLine(Color.White.copy(alpha = 0.45f), Offset(cx - bodyHalf * 0.6f, waterTop + 2f), Offset(cx + bodyHalf * 0.3f, waterTop + 1.5f), strokeWidth = 1.2f, cap = StrokeCap.Round)
+
+    // Contorno
+    drawPath(bodyPath, GlassStroke.copy(alpha = 0.6f), style = Stroke(1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+    // Riflesso vetro
+    drawLine(Color.White.copy(alpha = 0.35f), Offset(cx - bodyHalf + 2f, bodyTop + 6f), Offset(cx - bodyHalf + 1.5f, bodyBot - 4f), strokeWidth = 1.2f, cap = StrokeCap.Round)
+
+    // Etichetta sottile
+    val labelTop = bodyTop + (bodyBot - bodyTop) * 0.45f
+    val labelH = (bodyBot - bodyTop) * 0.12f
+    drawRect(Color.White.copy(alpha = 0.22f), Offset(cx - bodyHalf + 2f, labelTop), Size(bodyHalf * 2f - 4f, labelH))
+}
+
+// 1L — Bottiglia d'acqua grande (slanciata, stile vetro)
+private fun DrawScope.drawWaterBottleLarge() {
+    val w = size.width
+    val h = size.height
+    val cx = w / 2f
+
+    // Tappo
+    val capTop = h * 0.0f
+    val capBot = h * 0.07f
+    val capHalf = w * 0.10f
+    drawRect(BottleCap, Offset(cx - capHalf, capTop), Size(capHalf * 2f, capBot - capTop))
+
+    // Collo
+    val neckTop = capBot
+    val neckBot = h * 0.22f
+    val neckHalf = w * 0.06f
+    drawRect(BottleBody.copy(alpha = 0.4f), Offset(cx - neckHalf, neckTop), Size(neckHalf * 2f, neckBot - neckTop))
+
+    // Corpo stretto e allungato
+    val bodyTop = neckBot
+    val bodyBot = h * 0.98f
+    val bodyHalf = w * 0.22f
+
+    val bodyPath = Path().apply {
+        moveTo(cx - neckHalf, neckBot)
+        cubicTo(cx - bodyHalf, neckBot, cx - bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.05f,
+                cx - bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.10f)
+        lineTo(cx - bodyHalf, bodyBot)
+        lineTo(cx + bodyHalf, bodyBot)
+        lineTo(cx + bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.10f)
+        cubicTo(cx + bodyHalf, bodyTop + (bodyBot - bodyTop) * 0.05f,
+                cx + bodyHalf, neckBot, cx + neckHalf, neckBot)
+        close()
+    }
+
+    drawPath(bodyPath, brush = Brush.verticalGradient(
+        listOf(BottleBody.copy(alpha = 0.3f), BottleBody.copy(alpha = 0.15f)),
+        startY = bodyTop, endY = bodyBot
+    ))
+
+    // Acqua (~80%)
+    val waterTop = bodyTop + (bodyBot - bodyTop) * 0.20f
+    drawRect(
+        brush = Brush.verticalGradient(listOf(WaterBlueLight, WaterBlue, WaterBlueDark), startY = waterTop, endY = bodyBot),
+        topLeft = Offset(cx - bodyHalf, waterTop),
+        size = Size(bodyHalf * 2f, bodyBot - waterTop)
+    )
+
+    // Riflesso acqua
+    drawLine(Color.White.copy(alpha = 0.45f), Offset(cx - bodyHalf * 0.6f, waterTop + 2f), Offset(cx + bodyHalf * 0.3f, waterTop + 1.5f), strokeWidth = 1.5f, cap = StrokeCap.Round)
+
+    // Contorno
+    drawPath(bodyPath, GlassStroke.copy(alpha = 0.6f), style = Stroke(1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+    // Riflesso vetro
+    drawLine(Color.White.copy(alpha = 0.35f), Offset(cx - bodyHalf + 2f, bodyTop + 8f), Offset(cx - bodyHalf + 1.5f, bodyBot - 4f), strokeWidth = 1.5f, cap = StrokeCap.Round)
+
+    // Etichetta
+    val labelTop = bodyTop + (bodyBot - bodyTop) * 0.40f
+    val labelH = (bodyBot - bodyTop) * 0.15f
+    drawRect(Color.White.copy(alpha = 0.22f), Offset(cx - bodyHalf + 2f, labelTop), Size(bodyHalf * 2f - 4f, labelH))
+
+    // Goccia decorativa sull'etichetta
+    val dropCy = labelTop + labelH / 2f
+    val dropR = labelH * 0.22f
+    drawCircle(WaterBlue.copy(alpha = 0.4f), dropR, Offset(cx, dropCy))
 }

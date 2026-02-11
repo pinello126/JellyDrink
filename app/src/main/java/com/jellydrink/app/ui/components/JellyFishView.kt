@@ -219,11 +219,10 @@ fun JellyFishView(
     // === DRAG STATE ===
     var isDragging by remember { mutableStateOf(false) }
     var dragPosition by remember { mutableStateOf(Offset.Zero) }
-    var shockIntensity by remember { mutableStateOf(0f) }
-
-    // Manual positioning - quando l'utente trascina la medusa
-    var isManuallyPositioned by remember { mutableStateOf(false) }
-    var manualPosition by remember { mutableStateOf(Offset.Zero) }
+    // Posizione dove è stata rilasciata la medusa
+    var releasePosition by remember { mutableStateOf<Offset?>(null) }
+    // Drift al momento del rilascio (per compensare e evitare scatti)
+    var releaseDrift by remember { mutableStateOf(Offset.Zero) }
 
     // Store jellyfish position for hit testing
     var jellyfishCenter by remember { mutableStateOf(Offset.Zero) }
@@ -255,11 +254,21 @@ fun JellyFishView(
         initialValue = 0f, targetValue = 2f * PI.toFloat(),
         animationSpec = infiniteRepeatable(tween(35000, easing = LinearEasing), RepeatMode.Restart), label = "w3"
     )
-    // Tentacoli — ~6s
-    val tentPhase by inf.animateFloat(
+    // Tentacoli — fasi multiple ultra-smooth (periodi primi per evitare ripetizioni)
+    val tentPhaseA by inf.animateFloat(
         initialValue = 0f, targetValue = 2f * PI.toFloat(),
-        animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Restart),
-        label = "tent"
+        animationSpec = infiniteRepeatable(tween(7919, easing = LinearEasing), RepeatMode.Restart),
+        label = "tentA"
+    )
+    val tentPhaseB by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(11003, easing = LinearEasing), RepeatMode.Restart),
+        label = "tentB"
+    )
+    val tentPhaseC by inf.animateFloat(
+        initialValue = 0f, targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(13999, easing = LinearEasing), RepeatMode.Restart),
+        label = "tentC"
     )
     // Breathing — ~3.5s
     val breathe by inf.animateFloat(
@@ -285,11 +294,6 @@ fun JellyFishView(
         initialValue = 0f, targetValue = 2f * PI.toFloat(),
         animationSpec = infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Restart),
         label = "wave"
-    )
-    // Glow 100%
-    val glow100 by inf.animateFloat(
-        initialValue = 0.06f, targetValue = 0.28f,
-        animationSpec = infiniteRepeatable(tween(2500), RepeatMode.Reverse), label = "glow"
     )
     // Pulsazione organo interno
     val organPulse by inf.animateFloat(
@@ -343,33 +347,25 @@ fun JellyFishView(
                         if (normalizedDist <= 1f) {
                             isDragging = true
                             dragPosition = offset
-                            shockIntensity = 1f
+                            // Reset drift compensation per il prossimo rilascio
+                            releaseDrift = Offset.Zero
                         }
                     },
                     onDrag = { change, _ ->
                         if (isDragging) {
                             change.consume()
                             dragPosition = change.position
-                            shockIntensity = 1f
                         }
                     },
                     onDragEnd = {
-                        if (isDragging) {
-                            // Salva la posizione finale dove l'utente ha lasciato la medusa
-                            manualPosition = dragPosition
-                            isManuallyPositioned = true
-                        }
+                        // Salva la posizione di rilascio (il drift verrà compensato nel Canvas)
+                        releasePosition = dragPosition
                         isDragging = false
-                        shockIntensity = 0f
                     },
                     onDragCancel = {
-                        if (isDragging) {
-                            // Salva la posizione anche se il drag viene cancellato
-                            manualPosition = dragPosition
-                            isManuallyPositioned = true
-                        }
+                        // Salva la posizione di rilascio (il drift verrà compensato nel Canvas)
+                        releasePosition = dragPosition
                         isDragging = false
-                        shockIntensity = 0f
                     }
                 )
             }
@@ -381,56 +377,52 @@ fun JellyFishView(
         val complete = fill >= 1f
 
         // Ultra-smooth organic drift using combined sine/cosine waves
-        // NO MULTIPLIERS on phases = perfectly continuous, zero jumps!
 
-        // Horizontal drift - combine multiple sine waves for complex motion
-        val driftX1 = sin(driftPhase) * 0.38f
-        val driftX2 = sin(wavePhase1) * 0.22f        // NO multiplier!
-        val driftX3 = cos(wavePhase2) * 0.15f        // NO multiplier!
+        // Horizontal drift
+        val driftX1 = sin(driftPhase) * 0.35f
+        val driftX2 = sin(wavePhase1) * 0.19f
+        val driftX3 = cos(wavePhase2) * 0.12f
 
-        // Vertical drift - combine multiple cosine waves for independent Y movement
-        val driftY1 = cos(driftPhase) * 0.30f        // NO multiplier!
-        val driftY2 = cos(wavePhase3) * 0.18f        // NO multiplier!
-        val driftY3 = sin(wavePhase1) * 0.12f        // NO multiplier!
+        // Vertical drift
+        val driftY1 = cos(driftPhase) * 0.27f
+        val driftY2 = cos(wavePhase3) * 0.15f
+        val driftY3 = sin(wavePhase1) * 0.09f
 
-        // Final position logic:
-        // 1. Se sto trascinando -> usa dragPosition
-        // 2. Se è stata posizionata manualmente -> resta lì (manualPosition)
-        // 3. Altrimenti -> usa il movimento automatico (drift)
-        val cx = when {
-            isDragging -> dragPosition.x
-            isManuallyPositioned -> manualPosition.x
-            else -> w * (0.5f + driftX1 + driftX2 + driftX3)
-        }
-        val baseY = when {
-            isDragging -> dragPosition.y
-            isManuallyPositioned -> manualPosition.y
-            else -> h * (0.5f + driftY1 + driftY2 + driftY3)
+        // Drift totale attuale
+        val currentDriftX = w * (driftX1 + driftX2 + driftX3)
+        val currentDriftY = h * (driftY1 + driftY2 + driftY3)
+
+        // COMPENSAZIONE DRIFT: quando rilascio, salva il drift corrente per evitare scatti
+        if (!isDragging && releasePosition != null && releaseDrift == Offset.Zero) {
+            releaseDrift = Offset(currentDriftX, currentDriftY)
         }
 
         val ref = min(w, h)
         val bw = ref * 0.22f * breathe * scale
         val bh = bw * 1.18f
+
+        // Position logic con compensazione smooth del drift
+        val cx = if (isDragging) {
+            dragPosition.x
+        } else if (releasePosition != null) {
+            releasePosition!!.x - releaseDrift.x + currentDriftX
+        } else {
+            w * (0.5f + driftX1 + driftX2 + driftX3)
+        }
+
+        val baseY = if (isDragging) {
+            dragPosition.y
+        } else if (releasePosition != null) {
+            releasePosition!!.y - releaseDrift.y + currentDriftY
+        } else {
+            h * (0.5f + driftY1 + driftY2 + driftY3)
+        }
         val bodyTop = baseY - bh * 0.5f
         val bodyBot = baseY + bh * 0.5f
 
         // Update jellyfish position and size for hit testing
         jellyfishCenter = Offset(cx, baseY)
         jellyfishSize = Size(bw * 2f, bh)
-
-        // ══════════════════════════════════════════
-        //  GLOW DORATO 100%
-        // ══════════════════════════════════════════
-        if (complete) {
-            val glowAlpha = glow100 * 0.15f * glowIntensity
-            for (r in 4 downTo 1) {
-                drawCircle(
-                    color = palette.glowGold.copy(alpha = glowAlpha / r),
-                    radius = bw * (1.5f + r * 0.55f),
-                    center = Offset(cx, baseY)
-                )
-            }
-        }
 
         // ══════════════════════════════════════════
         //  OMBRA MORBIDA SOTTO (doppio layer)
@@ -449,8 +441,8 @@ fun JellyFishView(
         // ══════════════════════════════════════════
         //  TENTACOLI — dietro il corpo
         // ══════════════════════════════════════════
-        drawOralArms(cx, bodyBot, bw, bh, tentPhase, tentacleCount)
-        drawTrailingFilaments(cx, bodyBot, bw, bh, tentPhase, filamentCount)
+        drawOralArms(cx, bodyBot, bw, bh, tentPhaseA, tentPhaseB, tentPhaseC, tentacleCount)
+        drawTrailingFilaments(cx, bodyBot, bw, bh, tentPhaseA, tentPhaseB, tentPhaseC, filamentCount)
 
         // ══════════════════════════════════════════
         //  OUTER GLOW SHELL — alone esterno (palette based)
@@ -506,7 +498,7 @@ fun JellyFishView(
                 val startYc = baseY - bh * 0.08f + sin(angle) * startR * 0.5f
                 val endX = cx + cos(angle) * endR
                 val endYc = baseY - bh * 0.08f + sin(angle) * endR * 0.7f
-                val ctrlSway = sin(tentPhase * 0.3f + i * 0.6f) * bw * 0.04f
+                val ctrlSway = sin(tentPhaseA + i * 0.6f) * bw * 0.04f
 
                 val ch = Path().apply {
                     moveTo(startX, startYc)
@@ -518,7 +510,7 @@ fun JellyFishView(
                 }
                 drawPath(
                     ch, ChannelColor,
-                    style = Stroke(1.8f + sin(tentPhase * 0.2f + i) * 0.3f, cap = StrokeCap.Round)
+                    style = Stroke(1.8f + sin(tentPhaseB + i) * 0.3f, cap = StrokeCap.Round)
                 )
             }
 
@@ -546,7 +538,7 @@ fun JellyFishView(
                 val dotR = bw * dot.radiusF
                 val dx = cx + cos(dot.angleF) * dotR
                 val dy = baseY - bh * 0.05f + sin(dot.angleF) * dotR * 0.7f
-                val alpha = (0.3f + sin(tentPhase + dot.phase) * 0.15f) * glowIntensity
+                val alpha = (0.3f + sin(tentPhaseC + dot.phase) * 0.15f) * glowIntensity
                 drawCircle(BioDot.copy(alpha = alpha), dot.size, Offset(dx, dy))
                 drawCircle(BioDot.copy(alpha = alpha * 0.3f), dot.size * 2.5f, Offset(dx, dy))
             }
@@ -656,147 +648,6 @@ fun JellyFishView(
         }
 
         // ══════════════════════════════════════════
-        //  ⚡ ELECTRIC SHOCK EFFECT - X-RAY STYLE ⚡
-        // ══════════════════════════════════════════
-        if (isDragging && shockIntensity > 0f) {
-            val shockColor = Color(0xFFFFD700) // Giallo dorato
-            val shockYellow = Color(0xFFFFFF00) // Giallo elettrico
-
-            // ESPLOSIONE A STELLA PIÙ PICCOLA E CONTENUTA
-            val burstPath = Path().apply {
-                val spikes = 12
-                val innerRadius = bw * 0.8f
-                val outerRadius = bw * 1.3f
-
-                for (i in 0..spikes) {
-                    val angle = (i.toFloat() / spikes) * 2f * PI.toFloat()
-                    val nextAngle = ((i + 1).toFloat() / spikes) * 2f * PI.toFloat()
-
-                    val outerX = cx + cos(angle) * outerRadius
-                    val outerY = baseY + sin(angle) * outerRadius
-
-                    val innerAngle = (angle + nextAngle) / 2f
-                    val innerX = cx + cos(innerAngle) * innerRadius
-                    val innerY = baseY + sin(innerAngle) * innerRadius
-
-                    if (i == 0) {
-                        moveTo(outerX, outerY)
-                    } else {
-                        lineTo(outerX, outerY)
-                    }
-                    lineTo(innerX, innerY)
-                }
-                close()
-            }
-
-            // Disegna l'esplosione gialla
-            drawPath(burstPath, shockColor)
-
-            // FULMINI PIÙ CORTI (4 direzioni)
-            val lightningCount = 4
-            for (i in 0 until lightningCount) {
-                val angle = (i.toFloat() / lightningCount) * 2f * PI.toFloat()
-                val boltLength = bw * 1.5f
-
-                val boltPath = Path().apply {
-                    moveTo(cx, baseY)
-
-                    val segments = 3
-                    var currentX = cx
-                    var currentY = baseY
-
-                    for (s in 1..segments) {
-                        val progress = s.toFloat() / segments
-                        val targetX = cx + cos(angle) * boltLength * progress
-                        val targetY = baseY + sin(angle) * boltLength * progress
-
-                        val zigzagAngle = angle + PI.toFloat() / 2f
-                        val zigzagDist = bw * 0.2f * (if (s % 2 == 0) 1f else -1f)
-
-                        val midX = (currentX + targetX) / 2f + cos(zigzagAngle) * zigzagDist
-                        val midY = (currentY + targetY) / 2f + sin(zigzagAngle) * zigzagDist
-
-                        lineTo(midX, midY)
-                        lineTo(targetX, targetY)
-
-                        currentX = targetX
-                        currentY = targetY
-                    }
-                }
-
-                drawPath(
-                    boltPath,
-                    shockYellow,
-                    style = Stroke(6f, cap = StrokeCap.Square, join = StrokeJoin.Miter)
-                )
-            }
-
-            // ★ EFFETTO RADIOGRAFIA/X-RAY ★
-            // Medusa diventa una silhouette scura (come scheletro nella foto)
-
-            // Sfondo giallo brillante
-            drawPath(
-                path = bodyPath,
-                color = shockYellow.copy(alpha = 0.9f)
-            )
-
-            // Silhouette scura della struttura interna (X-RAY)
-            clipPath(bodyPath) {
-                // Organo centrale più scuro (stomaco)
-                val organR = bw * 0.18f
-                drawOval(
-                    color = Color(0xFF1A1A1A).copy(alpha = 0.8f),
-                    topLeft = Offset(cx - organR, baseY - bh * 0.05f - organR * 0.7f),
-                    size = Size(organR * 2f, organR * 1.4f)
-                )
-
-                // Canali radiali scuri (struttura interna)
-                val channelCount = 8
-                for (i in 0 until channelCount) {
-                    val angle = (i.toFloat() / channelCount) * PI.toFloat()
-                    val startR = bw * 0.15f
-                    val endR = bw * 0.75f
-                    val startX = cx + cos(angle) * startR
-                    val startYc = baseY - bh * 0.05f + sin(angle) * startR * 0.5f
-                    val endX = cx + cos(angle) * endR
-                    val endYc = baseY - bh * 0.05f + sin(angle) * endR * 0.7f
-
-                    val ch = Path().apply {
-                        moveTo(startX, startYc)
-                        lineTo(endX, endYc)
-                    }
-                    drawPath(
-                        ch,
-                        Color(0xFF2A2A2A).copy(alpha = 0.7f),
-                        style = Stroke(2f, cap = StrokeCap.Round)
-                    )
-                }
-
-                // Tentacoli come linee scure
-                for (i in 0 until tentacleCount) {
-                    val t = i.toFloat() / (tentacleCount - 1)
-                    val spread = bw * 1.4f
-                    val startX = cx - spread / 2f + spread * t
-
-                    drawLine(
-                        color = Color(0xFF1A1A1A).copy(alpha = 0.6f),
-                        start = Offset(startX, bodyBot),
-                        end = Offset(startX, bodyBot + bh * 0.8f),
-                        strokeWidth = 3f,
-                        cap = StrokeCap.Round
-                    )
-                }
-            }
-
-            // Contorno scuro forte per contrasto X-ray
-            drawPath(
-                bodyPath,
-                Color(0xFF000000).copy(alpha = 0.5f),
-                style = Stroke(3f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-            )
-        }
-
-        // ══════════════════════════════════════════
         //  CONTORNO — doppio layer per profondità
         // ══════════════════════════════════════════
         drawPath(bodyPath, Outline.copy(alpha = 0.15f),
@@ -845,7 +696,7 @@ fun JellyFishView(
         // ══════════════════════════════════════════
         bubbles.forEach { (offX, baseYF, radius) ->
             val bPhase = (bubblePhase + baseYF) % 1f
-            val bx = cx + offX * bw + sin(tentPhase + offX * 5f) * bw * 0.04f
+            val bx = cx + offX * bw + sin(tentPhaseA + offX * 5f) * bw * 0.04f
             val by = bodyTop - bPhase * bh * 1.8f
             val alpha = (1f - bPhase).coerceIn(0f, 1f) * 0.40f
 
@@ -864,6 +715,8 @@ fun JellyFishView(
                     Offset(bx - radius * 0.3f, by - radius * 0.3f))
             }
         }
+
+        // Nessun effetto speciale quando si trascina - solo movimento naturale
     }
 }
 
@@ -1043,7 +896,8 @@ private fun DrawScope.drawRichMouth(cx: Float, my: Float, bw: Float, fillPct: Fl
 //  BRACCIA ORALI — tentacoli spessi, organici, con volume
 // ═══════════════════════════════════════════════════════════════════
 private fun DrawScope.drawOralArms(
-    cx: Float, bot: Float, bw: Float, bh: Float, phase: Float, count: Int = 5
+    cx: Float, bot: Float, bw: Float, bh: Float,
+    phaseA: Float, phaseB: Float, phaseC: Float, count: Int = 5
 ) {
     val spread = bw * 1.4f
     val colors = listOf(ArmLight, ArmMid, ArmDark, ArmMid, ArmLight)
@@ -1055,15 +909,15 @@ private fun DrawScope.drawOralArms(
         val thick = 6f - abs(i - 2) * 0.8f  // più spessi al centro
 
         // Ombra
-        val sh = buildArmPath(startX + 2f, bot + 2f, phase, i, len)
+        val sh = buildArmPath(startX + 2f, bot + 2f, phaseA, phaseB, phaseC, i, len)
         drawPath(sh, Color.Black.copy(alpha = 0.04f), style = Stroke(thick + 3f, cap = StrokeCap.Round))
 
         // Braccio principale
-        val path = buildArmPath(startX, bot, phase, i, len)
+        val path = buildArmPath(startX, bot, phaseA, phaseB, phaseC, i, len)
         drawPath(path, colors[i].copy(alpha = 0.80f), style = Stroke(thick, cap = StrokeCap.Round))
 
         // Highlight laterale
-        val hl = buildArmPath(startX - 0.6f, bot - 0.6f, phase, i, len)
+        val hl = buildArmPath(startX - 0.6f, bot - 0.6f, phaseA, phaseB, phaseC, i, len)
         drawPath(hl, Color.White.copy(alpha = 0.18f), style = Stroke(thick * 0.25f, cap = StrokeCap.Round))
 
         // Outline leggero
@@ -1071,7 +925,11 @@ private fun DrawScope.drawOralArms(
     }
 }
 
-private fun buildArmPath(sx: Float, sy: Float, phase: Float, idx: Int, len: Float): Path {
+private fun buildArmPath(
+    sx: Float, sy: Float,
+    phaseA: Float, phaseB: Float, phaseC: Float,
+    idx: Int, len: Float
+): Path {
     val path = Path()
     path.moveTo(sx, sy)
     val segs = 16
@@ -1080,7 +938,11 @@ private fun buildArmPath(sx: Float, sy: Float, phase: Float, idx: Int, len: Floa
     for (s in 1..segs) {
         val st = s.toFloat() / segs
         val amp = (5f + 8f * st * st)
-        val nx = sx + sin(phase * 0.9f + idx * 0.8f + st * 3.5f) * amp
+        // Combine 3 independent phases with NO multipliers — each loops 0→2π seamlessly
+        val wave = sin(phaseA + idx * 0.8f + st * 3.5f) * 0.5f +
+                   sin(phaseB + idx * 1.2f + st * 2.8f) * 0.3f +
+                   sin(phaseC + idx * 0.5f + st * 4.2f) * 0.2f
+        val nx = sx + wave * amp
         val ny = sy + s * segL
         path.quadraticTo((px + nx) / 2f, (py + ny) / 2f, nx, ny)
         px = nx; py = ny
@@ -1092,7 +954,8 @@ private fun buildArmPath(sx: Float, sy: Float, phase: Float, idx: Int, len: Floa
 //  FILAMENTI SOTTILI — trailing tentacles lunghi e leggeri
 // ═══════════════════════════════════════════════════════════════════
 private fun DrawScope.drawTrailingFilaments(
-    cx: Float, bot: Float, bw: Float, bh: Float, phase: Float, count: Int = 8
+    cx: Float, bot: Float, bw: Float, bh: Float,
+    phaseA: Float, phaseB: Float, phaseC: Float, count: Int = 8
 ) {
     val spread = bw * 2f
 
@@ -1104,12 +967,16 @@ private fun DrawScope.drawTrailingFilaments(
         val alpha = 0.25f + (i % 3) * 0.08f
         val color = if (i % 2 == 0) FilLight else FilDark
 
-        val path = buildFilamentPath(startX, bot + bh * 0.08f, phase, i, len)
+        val path = buildFilamentPath(startX, bot + bh * 0.08f, phaseA, phaseB, phaseC, i, len)
         drawPath(path, color.copy(alpha = alpha), style = Stroke(thick, cap = StrokeCap.Round))
     }
 }
 
-private fun buildFilamentPath(sx: Float, sy: Float, phase: Float, idx: Int, len: Float): Path {
+private fun buildFilamentPath(
+    sx: Float, sy: Float,
+    phaseA: Float, phaseB: Float, phaseC: Float,
+    idx: Int, len: Float
+): Path {
     val path = Path()
     path.moveTo(sx, sy)
     val segs = 30
@@ -1118,7 +985,11 @@ private fun buildFilamentPath(sx: Float, sy: Float, phase: Float, idx: Int, len:
     for (s in 1..segs) {
         val st = s.toFloat() / segs
         val amp = (2f + 14f * st * st)
-        val nx = sx + sin(phase * 0.7f + idx * 0.55f + st * 5f) * amp
+        // Combine 3 independent phases — NO multipliers, perfectly seamless loops
+        val wave = sin(phaseA + idx * 0.55f + st * 5f) * 0.45f +
+                   sin(phaseB + idx * 0.9f + st * 3.7f) * 0.35f +
+                   sin(phaseC + idx * 1.3f + st * 6.1f) * 0.20f
+        val nx = sx + wave * amp
         val ny = sy + s * segL
         path.quadraticTo((px + nx) / 2f, (py + ny) / 2f, nx, ny)
         px = nx; py = ny
