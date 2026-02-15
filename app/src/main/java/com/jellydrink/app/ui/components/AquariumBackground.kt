@@ -222,9 +222,6 @@ fun AquariumBackground(
         drawRock(w * 0.62f, sandTop - 4f, 24f, 18f, RockDark, RockLight)
         drawRock(w * 0.10f, sandTop - 1f, 14f, 10f, Color(0xFF505860), Color(0xFF687078))
 
-        // Corallo piccolo
-        drawCoral(w * 0.40f, sandTop - 8f, 12f, CoralPink, time)
-        drawCoral(w * 0.70f, sandTop - 6f, 10f, CoralOrange, time + 1f)
 
         // === PIANTE MARINE CORTE SUL FONDALE - SMOOTH ===
         for (i in 0..6) {
@@ -396,7 +393,11 @@ fun AquariumBackground(
                     drawStarfish(starX, starY, 18f, StarfishOrange, StarfishDark)
                 }
                 "coral_pink" -> {
-                    drawCoral(w * baseX, sandTop - 10f, 18f, CoralPink, time)
+                    // 3 coralli sovrapposti in basso a destra, immersi nella sabbia
+                    val sandDepth = sandTop + 130f
+                    drawCoral(w * 0.82f, sandDepth, 95f)
+                    drawCoral(w * 0.85f, sandDepth, 81f)
+                    drawCoral(w * 0.88f, sandDepth, 88f)
                 }
                 "treasure" -> {
                     drawTreasureChest(w * baseX, sandTop - 8f, 30f, phase2)
@@ -581,46 +582,111 @@ internal fun DrawScope.drawRock(cx: Float, cy: Float, rw: Float, rh: Float, dark
     )
 }
 
-// --- Corallo decorativo - SMOOTH ---
-internal fun DrawScope.drawCoral(baseX: Float, baseY: Float, height: Float, color: Color, time: Float) {
-    val branches = 5
-    for (i in 0 until branches) {
-        val angle = -PI.toFloat() / 2f + (i - branches / 2) * 0.35f
-        // No multipliers on time - perfectly smooth!
-        val sway = sin(time + i * 0.8f) * 2f
-        val endX = baseX + cos(angle) * height + sway
-        val endY = baseY + sin(angle) * height
+// --- Corallo 🪸 — rosso sgargiante, macchie bianche, rami dalla sabbia ---
+internal fun DrawScope.drawCoral(baseX: Float, baseY: Float, height: Float) {
+    val h = height
+    // Palette rosso corallo sgargiante
+    val coralRed = Color(0xFFE83030)
+    val coralDark = Color(0xFFB01818)
+    val coralBright = Color(0xFFFF5040)
+    val coralHot = Color(0xFFFF3838)
 
+    // Accumula posizioni dei rami per le macchie bianche
+    val spotPositions = mutableListOf<Offset>()
+
+    // Disegna un singolo ramo: tubo con punta arrotondata
+    fun branch(x1: Float, y1: Float, x2: Float, y2: Float, w: Float) {
+        val dx = x2 - x1
+        val dy = y2 - y1
+        val len = kotlin.math.sqrt(dx * dx + dy * dy)
+        if (len < 0.5f) return
+        val nx = -dy / len * w * 0.5f
+        val ny = dx / len * w * 0.5f
+
+        val tubePath = Path().apply {
+            moveTo(x1 + nx, y1 + ny)
+            lineTo(x2 + nx * 0.7f, y2 + ny * 0.7f)
+            quadraticTo(x2, y2 - w * 0.5f, x2 - nx * 0.7f, y2 - ny * 0.7f)
+            lineTo(x1 - nx, y1 - ny)
+            close()
+        }
+        drawPath(tubePath, brush = Brush.verticalGradient(
+            colors = listOf(coralDark, coralRed, coralBright),
+            startY = y1, endY = y2
+        ))
+        // Highlight laterale (luce)
         drawLine(
-            color = color.copy(alpha = 0.6f),
-            start = Offset(baseX, baseY),
-            end = Offset(endX, endY),
-            strokeWidth = 3f,
+            color = Color.White.copy(alpha = 0.22f),
+            start = Offset(x1 + nx * 0.5f, y1 + ny * 0.5f),
+            end = Offset(x2 + nx * 0.35f, y2 + ny * 0.35f),
+            strokeWidth = w * 0.18f,
             cap = StrokeCap.Round
         )
-        // Punta arrotondata
+        // Punta tondeggiante
         drawCircle(
-            color = color.copy(alpha = 0.5f),
-            radius = 2.5f,
-            center = Offset(endX, endY)
+            brush = Brush.radialGradient(
+                colors = listOf(coralHot, coralRed),
+                center = Offset(x2, y2),
+                radius = w * 0.7f
+            ),
+            radius = w * 0.5f,
+            center = Offset(x2, y2)
+        )
+        // Riflesso sulla punta
+        drawCircle(
+            color = Color.White.copy(alpha = 0.4f),
+            radius = w * 0.18f,
+            center = Offset(x2 - w * 0.1f, y2 - w * 0.15f)
         )
 
-        // Sub-rami
-        if (i % 2 == 0) {
-            val subAngle = angle + 0.4f * if (i < branches / 2) -1f else 1f
-            val subEndX = endX + cos(subAngle) * height * 0.4f
-            val subEndY = endY + sin(subAngle) * height * 0.4f
-            drawLine(
-                color = color.copy(alpha = 0.4f),
-                start = Offset(endX, endY),
-                end = Offset(subEndX, subEndY),
-                strokeWidth = 2f,
-                cap = StrokeCap.Round
-            )
+        // Salva posizioni per macchie bianche
+        val midX = (x1 + x2) * 0.5f
+        val midY = (y1 + y2) * 0.5f
+        spotPositions.add(Offset(midX, midY))
+        spotPositions.add(Offset(x2, y2))
+    }
+
+    // Ramo che si biforca a Y, ricorsivo
+    fun yBranch(x: Float, y: Float, angle: Float, len: Float, w: Float, depth: Int) {
+        val tipX = x + cos(angle) * len
+        val tipY = y + sin(angle) * len
+        branch(x, y, tipX, tipY, w)
+
+        if (depth > 0) {
+            val spread = 0.4f + depth * 0.05f
+            val nextLen = len * 0.62f
+            val nextW = w * 0.72f
+            yBranch(tipX, tipY, angle - spread, nextLen, nextW, depth - 1)
+            yBranch(tipX, tipY, angle + spread, nextLen, nextW, depth - 1)
+        }
+    }
+
+    val up = -PI.toFloat() / 2f
+
+    // Ramo centrale (piu' alto)
+    yBranch(baseX, baseY, up, h * 0.42f, h * 0.10f, 2)
+    // Ramo sinistro
+    yBranch(baseX - h * 0.08f, baseY, up - 0.35f, h * 0.34f, h * 0.08f, 2)
+    // Ramo destro
+    yBranch(baseX + h * 0.08f, baseY, up + 0.35f, h * 0.34f, h * 0.08f, 2)
+    // Rametto laterale sinistro
+    yBranch(baseX - h * 0.13f, baseY, up - 0.7f, h * 0.22f, h * 0.06f, 1)
+    // Rametto laterale destro
+    yBranch(baseX + h * 0.13f, baseY, up + 0.7f, h * 0.22f, h * 0.06f, 1)
+
+    // === MACCHIE BIANCHE sparse (come polipi / texture corallo) ===
+    // Usa un pattern deterministico basato sulla posizione del corallo
+    val seed = (baseX * 7f + baseY * 13f).toInt()
+    spotPositions.forEachIndexed { i, pos ->
+        // Alterna: una macchia si' una no, pattern vario
+        if ((i + seed) % 3 == 0) {
+            val r = h * 0.018f + (((i * 17 + seed) % 7) * h * 0.004f)
+            val ox = ((i * 31 + seed) % 11 - 5) * h * 0.006f
+            val oy = ((i * 23 + seed) % 9 - 4) * h * 0.005f
             drawCircle(
-                color = color.copy(alpha = 0.35f),
-                radius = 1.8f,
-                center = Offset(subEndX, subEndY)
+                color = Color.White.copy(alpha = 0.55f),
+                radius = r,
+                center = Offset(pos.x + ox, pos.y + oy)
             )
         }
     }
