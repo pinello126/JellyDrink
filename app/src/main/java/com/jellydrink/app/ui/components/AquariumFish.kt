@@ -1,4 +1,5 @@
 package com.jellydrink.app.ui.components
+
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -78,7 +79,14 @@ internal fun DrawScope.drawCartoonFishEye(
 }
 
 // --- Realistic Blue Fish (Cartoon 3D Style like Fishdom) ---
-internal fun DrawScope.drawRealisticBlueFish(cx: Float, cy: Float, size: Float, swimPhase: Float, index: Int, direction: Float = 1f) {
+internal fun DrawScope.drawRealisticBlueFish(
+    cx: Float,
+    cy: Float,
+    size: Float,
+    swimPhase: Float,
+    index: Int,
+    direction: Float = 1f
+) {
     // Animazioni nuoto — swimPhase va 0→2π in 3s, perfettamente fluido
     val phaseOffset = index * 3.7f
     // Coda: oscillazione rapida (2× = intero, sin(4π)=0, seamless)
@@ -374,12 +382,14 @@ internal fun DrawScope.drawRealisticBlueFish(cx: Float, cy: Float, size: Float, 
     )
 
     // === HUGE CARTOON EYES ===
-    drawCartoonFishEye(cx, bodyY, size, direction, CartoonEyeStyle(
-        offsetX = 0.65f, offsetY = -0.2f, radius = 0.45f, ovalStretch = 1.1f,
-        irisRadiusFactor = 0.6f, pupilRadiusFactor = 0.35f,
-        irisColors = listOf(Color(0xFFD946EF), Color(0xFF9333EA), Color(0xFF6B21A8)),
-        outlineColor = bodyDarkColor.copy(alpha = 0.3f)
-    ))
+    drawCartoonFishEye(
+        cx, bodyY, size, direction, CartoonEyeStyle(
+            offsetX = 0.65f, offsetY = -0.2f, radius = 0.45f, ovalStretch = 1.1f,
+            irisRadiusFactor = 0.6f, pupilRadiusFactor = 0.35f,
+            irisColors = listOf(Color(0xFFD946EF), Color(0xFF9333EA), Color(0xFF6B21A8)),
+            outlineColor = bodyDarkColor.copy(alpha = 0.3f)
+        )
+    )
 
     // === SMILING MOUTH (large, open) ===
     val mouthPath = Path().apply {
@@ -436,7 +446,14 @@ internal fun DrawScope.drawRealisticBlueFish(cx: Float, cy: Float, size: Float, 
 }
 
 // --- Realistic Clownfish (Orange with white stripes) ---
-internal fun DrawScope.drawRealisticClownfish(cx: Float, cy: Float, size: Float, swimPhase: Float, index: Int, direction: Float = 1f) {
+internal fun DrawScope.drawRealisticClownfish(
+    cx: Float,
+    cy: Float,
+    size: Float,
+    swimPhase: Float,
+    index: Int,
+    direction: Float = 1f
+) {
     // Animazioni nuoto — swimPhase va 0→2π in 3s, perfettamente fluido
     val phaseOffset = index * 4.2f
     // Coda: oscillazione rapida (2× = intero, seamless)
@@ -636,12 +653,14 @@ internal fun DrawScope.drawRealisticClownfish(cx: Float, cy: Float, size: Float,
     drawPath(pectoralPath, bodyOrange.copy(alpha = 0.7f))
 
     // === HUGE CARTOON EYES ===
-    drawCartoonFishEye(cx, bodyY, size, direction, CartoonEyeStyle(
-        offsetX = 0.7f, offsetY = -0.15f, radius = 0.38f, ovalStretch = 1.05f,
-        irisRadiusFactor = 0.55f, pupilRadiusFactor = 0.32f,
-        irisColors = listOf(Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF1E40AF)),
-        outlineColor = blackOutline.copy(alpha = 0.3f)
-    ))
+    drawCartoonFishEye(
+        cx, bodyY, size, direction, CartoonEyeStyle(
+            offsetX = 0.7f, offsetY = -0.15f, radius = 0.38f, ovalStretch = 1.05f,
+            irisRadiusFactor = 0.55f, pupilRadiusFactor = 0.32f,
+            irisColors = listOf(Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF1E40AF)),
+            outlineColor = blackOutline.copy(alpha = 0.3f)
+        )
+    )
 
     // === SMILING MOUTH ===
     val mouthPath = Path().apply {
@@ -674,145 +693,277 @@ internal fun DrawScope.drawRealisticClownfish(cx: Float, cy: Float, size: Float,
     )
 }
 
-// --- Realistic Turtle (Cartoon 3D) ---
-internal fun DrawScope.drawRealisticTurtle(cx: Float, cy: Float, size: Float, time: Float, index: Int, direction: Float = 1f) {
-    val phaseOffset = index * 3.9f
-    val flipperFlap = sin(time * 2f + phaseOffset) * 0.35f
-    val bodyBounce = sin(time + phaseOffset) * 0.06f
+// --- Realistic Turtle (Cartoon 3D, swimming motion) ---
+internal fun DrawScope.drawRealisticTurtle(
+    cx: Float,
+    cy: Float,
+    size: Float,
+    time: Float,
+    index: Int,
+    direction: Float = 1f
+) {
 
-    val shellGreen = Color(0xFF2E7D32) // Dark green
-    val shellLight = Color(0xFF66BB6A) // Light green
-    val skinGreen = Color(0xFF81C784) // Skin green
-    val shellPattern = Color(0xFF1B5E20) // Very dark green
+    val phaseOffset = index * 2.3f
+    // Gentle body bob — turtle glides smoothly
+    val bobY = sin(time * 0.8f + phaseOffset) * 0.04f
+    val bodyY = cy + bobY * size
+
+    val shellDark = Color(0xFF2E7D32)
+    val shellMid = Color(0xFF4CAF50)
+    val shellLight = Color(0xFFA5D6A7)
+    val skin = Color(0xFF8BC34A)
+    val skinLight = Color(0xFFC5E1A5)
+    val skinDark = Color(0xFF558B2F)
     val eyeColor = Color(0xFF1A1A1A)
 
-    val bodyY = cy + bodyBounce * size
-    // Direction passed as parameter - turtle faces the direction it's swimming
+    // =======================
+    // SWIMMING FLIPPER CYCLE
+    // =======================
+    // time is now a smooth slow phase (fishPhase2 ~83s cycle) — no jumps.
+    // Front flippers do synchronized gentle strokes (like a sea turtle gliding).
+    val strokePhase = time * 12f + phaseOffset
+    // Front flippers — synchronized sweep
+    val frontFlipperAngle = sin(strokePhase) * 0.55f
+    // Back flippers — gentle paddle, slightly faster
+    val backFlipperKick = sin(strokePhase * 1.3f) * 0.3f
 
-    // Shadow
+    // =======================
+    // SHADOW
+    // =======================
     drawOval(
-        color = Color.Black.copy(alpha = 0.15f),
-        topLeft = Offset(cx - size * 0.8f, bodyY + size * 0.6f),
-        size = Size(size * 1.6f, size * 0.5f)
+        color = Color.Black.copy(alpha = 0.08f),
+        topLeft = Offset(cx - size * 0.9f, bodyY + size * 0.7f),
+        size = Size(size * 1.8f, size * 0.3f)
     )
 
-    // === BACK FLIPPERS (behind shell) ===
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(skinGreen, shellGreen),
-            center = Offset(cx - direction * size * 0.4f, bodyY - size * 0.1f),
-            radius = size * 0.3f
-        ),
-        topLeft = Offset(cx - direction * size * 0.65f - flipperFlap * size * 0.4f, bodyY - size * 0.25f),
-        size = Size(size * 0.4f, size * 0.25f)
-    )
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(skinGreen, shellGreen),
-            center = Offset(cx - direction * size * 0.4f, bodyY + size * 0.15f),
-            radius = size * 0.3f
-        ),
-        topLeft = Offset(cx - direction * size * 0.65f - flipperFlap * size * 0.4f, bodyY + size * 0.05f),
-        size = Size(size * 0.4f, size * 0.25f)
-    )
+    // =======================
+    // BACK FLIPPERS (small paddle fins)
+    // =======================
+    for (side in listOf(-1f, 1f)) {
+        val kickAngle = backFlipperKick * side
+        val bfBaseX = cx - direction * size * 0.55f
+        val bfBaseY = bodyY + side * size * 0.25f
 
-    // === SHELL (main body) ===
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(shellLight, shellGreen, shellGreen.copy(alpha = 0.9f)),
-            center = Offset(cx, bodyY - size * 0.1f),
-            radius = size * 0.7f
-        ),
-        topLeft = Offset(cx - size * 0.65f, bodyY - size * 0.5f),
-        size = Size(size * 1.3f, size)
-    )
-
-    // Shell pattern (hexagons)
-    for (row in 0..1) {
-        for (col in 0..2) {
-            val patternX = cx - size * 0.35f + col * size * 0.35f
-            val patternY = bodyY - size * 0.25f + row * size * 0.3f
-            drawCircle(
-                color = shellPattern.copy(alpha = 0.4f),
-                radius = size * 0.15f,
-                center = Offset(patternX, patternY),
-                style = Stroke(2.5f)
+        val backFlipperPath = Path().apply {
+            moveTo(bfBaseX, bfBaseY)
+            quadraticTo(
+                bfBaseX - direction * size * 0.35f,
+                bfBaseY + side * size * (0.25f + kickAngle * 0.4f),
+                bfBaseX - direction * size * 0.15f,
+                bfBaseY + side * size * (0.4f + kickAngle * 0.3f)
+            )
+            quadraticTo(
+                bfBaseX + direction * size * 0.05f,
+                bfBaseY + side * size * 0.2f,
+                bfBaseX, bfBaseY
             )
         }
-    }
-
-    // Shell highlight
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                Color.White.copy(alpha = 0.4f),
-                Color.Transparent
-            ),
-            center = Offset(cx - size * 0.2f, bodyY - size * 0.3f),
-            radius = size * 0.4f
-        ),
-        topLeft = Offset(cx - size * 0.4f, bodyY - size * 0.45f),
-        size = Size(size * 0.6f, size * 0.4f)
-    )
-
-    // === HEAD ===
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(skinGreen, shellGreen.copy(alpha = 0.8f)),
-            center = Offset(cx + direction * size * 0.65f, bodyY - size * 0.05f),
-            radius = size * 0.35f
-        ),
-        topLeft = Offset(cx + direction * size * 0.4f, bodyY - size * 0.25f),
-        size = Size(size * 0.5f, size * 0.4f)
-    )
-
-    // Eyes
-    val eyeX = cx + direction * size * 0.72f
-    val eyeY = bodyY - size * 0.1f
-    drawCircle(
-        Color.White,
-        size * 0.12f,
-        Offset(eyeX, eyeY)
-    )
-    drawCircle(
-        eyeColor,
-        size * 0.07f,
-        Offset(eyeX + direction * size * 0.02f, eyeY)
-    )
-    drawCircle(
-        Color.White.copy(alpha = 0.8f),
-        size * 0.03f,
-        Offset(eyeX + direction * size * 0.04f, eyeY - size * 0.02f)
-    )
-
-    // Smile
-    val smilePath = Path().apply {
-        moveTo(cx + direction * size * 0.75f, bodyY + size * 0.05f)
-        quadraticTo(
-            cx + direction * size * 0.82f, bodyY + size * 0.12f,
-            cx + direction * size * 0.88f, bodyY + size * 0.06f
+        drawPath(
+            backFlipperPath,
+            brush = Brush.radialGradient(
+                colors = listOf(skinLight, skin, skinDark),
+                center = Offset(bfBaseX, bfBaseY),
+                radius = size * 0.5f
+            )
+        )
+        // Flipper outline
+        drawPath(
+            backFlipperPath,
+            color = skinDark.copy(alpha = 0.4f),
+            style = Stroke(width = size * 0.02f, cap = StrokeCap.Round)
         )
     }
-    drawPath(smilePath, eyeColor.copy(alpha = 0.5f), style = Stroke(2f, cap = StrokeCap.Round))
 
-    // === FRONT FLIPPERS (in front of shell) ===
+    // =======================
+    // FRONT FLIPPERS (side-view: extend up/down from shell, synchronized)
+    // Drawn BEHIND shell
+    // =======================
+    for (side in listOf(-1f, 1f)) {
+        // Both flippers move together (synchronized swimming)
+        val flipAngle = frontFlipperAngle
+
+        // Base: near the front edge of the shell
+        val ffBaseX = cx + direction * size * 0.2f
+        val ffBaseY = bodyY + side * size * 0.15f
+
+        // Tip sweeps outward (up/down) with the stroke (+40%)
+        val tipX = ffBaseX + direction * size * (0.46f + flipAngle * 0.21f)
+        val tipY = ffBaseY + side * size * (0.81f + flipAngle * 0.35f)
+
+        // Control points for a paddle shape (+40%)
+        val cp1X = ffBaseX + direction * size * 0.73f
+        val cp1Y = ffBaseY + side * size * (0.21f + flipAngle * 0.14f)
+        val cp2X = ffBaseX + direction * size * 0.07f
+        val cp2Y = ffBaseY + side * size * (0.63f + flipAngle * 0.21f)
+
+        val frontFlipperPath = Path().apply {
+            moveTo(ffBaseX, ffBaseY)
+            quadraticTo(cp1X, cp1Y, tipX, tipY)
+            quadraticTo(cp2X, cp2Y, ffBaseX, ffBaseY)
+        }
+
+        drawPath(
+            frontFlipperPath,
+            brush = Brush.radialGradient(
+                colors = listOf(skinLight, skin, skinDark),
+                center = Offset(ffBaseX, ffBaseY),
+                radius = size * 0.6f
+            )
+        )
+        drawPath(
+            frontFlipperPath,
+            color = skinDark.copy(alpha = 0.3f),
+            style = Stroke(width = size * 0.02f, cap = StrokeCap.Round)
+        )
+    }
+
+    // =======================
+    // SHELL (dome, cartoon 3D)
+    // =======================
     drawOval(
         brush = Brush.radialGradient(
-            colors = listOf(skinGreen, shellGreen),
-            center = Offset(cx + direction * size * 0.2f, bodyY - size * 0.35f),
-            radius = size * 0.3f
+            colors = listOf(shellLight, shellMid, shellDark),
+            center = Offset(cx - size * 0.1f, bodyY - size * 0.25f),
+            radius = size
         ),
-        topLeft = Offset(cx + direction * size * 0.0f + flipperFlap * size * 0.5f, bodyY - size * 0.6f),
+        topLeft = Offset(cx - size * 0.8f, bodyY - size * 0.6f),
+        size = Size(size * 1.6f, size * 1.2f)
+    )
+
+    // Shell pattern — hexagonal scute lines
+    val patternColor = shellDark.copy(alpha = 0.2f)
+    val patternStroke = Stroke(width = size * 0.025f, cap = StrokeCap.Round)
+    // Center scute
+    drawOval(
+        color = patternColor,
+        topLeft = Offset(cx - size * 0.35f, bodyY - size * 0.25f),
+        size = Size(size * 0.7f, size * 0.55f),
+        style = patternStroke
+    )
+    // Side scutes (small arcs)
+    for (side in listOf(-1f, 1f)) {
+        val arcPath = Path().apply {
+            moveTo(cx + side * size * 0.35f, bodyY - size * 0.2f)
+            quadraticTo(
+                cx + side * size * 0.65f, bodyY,
+                cx + side * size * 0.35f, bodyY + size * 0.25f
+            )
+        }
+        drawPath(arcPath, patternColor, style = patternStroke)
+    }
+
+    // Shell highlight (glossy dome)
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(Color.White.copy(alpha = 0.35f), Color.Transparent),
+            center = Offset(cx - size * 0.25f, bodyY - size * 0.4f),
+            radius = size * 0.55f
+        ),
+        topLeft = Offset(cx - size * 0.65f, bodyY - size * 0.65f),
+        size = Size(size * 1.0f, size * 0.7f)
+    )
+
+    // Shell rim
+    drawOval(
+        color = shellDark.copy(alpha = 0.3f),
+        topLeft = Offset(cx - size * 0.8f, bodyY - size * 0.6f),
+        size = Size(size * 1.6f, size * 1.2f),
+        style = Stroke(width = size * 0.03f)
+    )
+
+    // =======================
+    // NECK (connects shell to head)
+    // =======================
+    val neckPath = Path().apply {
+        moveTo(cx + direction * size * 0.7f, bodyY - size * 0.1f)
+        quadraticTo(
+            cx + direction * size * 0.9f, bodyY - size * 0.15f,
+            cx + direction * size * 1.0f, bodyY - size * 0.05f
+        )
+        quadraticTo(
+            cx + direction * size * 0.9f, bodyY + size * 0.12f,
+            cx + direction * size * 0.7f, bodyY + size * 0.1f
+        )
+    }
+    drawPath(neckPath, color = skin)
+
+    // =======================
+    // HEAD (cute round)
+    // =======================
+    val headCenterX = cx + direction * size * 1.05f
+    val headCenterY = bodyY - size * 0.02f
+
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(skinLight, skin, skinDark),
+            center = Offset(headCenterX - direction * size * 0.05f, headCenterY - size * 0.05f),
+            radius = size * 0.5f
+        ),
+        topLeft = Offset(
+            headCenterX - size * 0.4f,
+            headCenterY - size * 0.28f
+        ),
+        size = Size(size * 0.8f, size * 0.56f)
+    )
+    // Head highlight
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(Color.White.copy(alpha = 0.25f), Color.Transparent),
+            center = Offset(headCenterX - direction * size * 0.05f, headCenterY - size * 0.15f),
+            radius = size * 0.25f
+        ),
+        topLeft = Offset(headCenterX - size * 0.3f, headCenterY - size * 0.25f),
         size = Size(size * 0.5f, size * 0.3f)
     )
-    drawOval(
-        brush = Brush.radialGradient(
-            colors = listOf(skinGreen, shellGreen),
-            center = Offset(cx + direction * size * 0.2f, bodyY + size * 0.35f),
-            radius = size * 0.3f
-        ),
-        topLeft = Offset(cx + direction * size * 0.0f + flipperFlap * size * 0.5f, bodyY + size * 0.35f),
-        size = Size(size * 0.5f, size * 0.3f)
+
+    // =======================
+    // EYE
+    // =======================
+    val eyeX = headCenterX + direction * size * 0.15f
+    val eyeY = headCenterY - size * 0.04f
+
+    // Eye white
+    drawCircle(Color.White, size * 0.14f, Offset(eyeX, eyeY))
+    // Iris
+    drawCircle(
+        Color(0xFF2E7D32),
+        size * 0.09f,
+        Offset(eyeX + direction * size * 0.02f, eyeY)
+    )
+    // Pupil
+    drawCircle(
+        eyeColor,
+        size * 0.055f,
+        Offset(eyeX + direction * size * 0.025f, eyeY + size * 0.005f)
+    )
+    // Eye shine
+    drawCircle(
+        Color.White.copy(alpha = 0.9f),
+        size * 0.04f,
+        Offset(eyeX + direction * size * 0.04f, eyeY - size * 0.04f)
+    )
+
+    // Cute tiny smile
+    val smile = Path().apply {
+        moveTo(headCenterX + direction * size * 0.08f, headCenterY + size * 0.16f)
+        quadraticTo(
+            headCenterX + direction * size * 0.28f,
+            headCenterY + size * 0.24f,
+            headCenterX + direction * size * 0.42f,
+            headCenterY + size * 0.14f
+        )
+    }
+    drawPath(
+        smile,
+        eyeColor.copy(alpha = 0.5f),
+        style = Stroke(width = size * 0.025f, cap = StrokeCap.Round)
+    )
+
+    // Nostril dot
+    drawCircle(
+        skinDark.copy(alpha = 0.4f),
+        size * 0.02f,
+        Offset(headCenterX + direction * size * 0.32f, headCenterY + size * 0.02f)
     )
 }
 

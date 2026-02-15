@@ -295,7 +295,8 @@ fun HomeScreen(
                             Text(
                                 text = when {
                                     amount % 1000 == 0 -> "${amount / 1000}L"
-                                    else -> "%.1fL".format(amount / 1000f)
+                                    amount % 100 == 0 -> "%.1fL".format(amount / 1000f)
+                                    else -> "%.2fL".format(amount / 1000f)
                                 },
                                 fontSize = 11.sp,
                                 color = Color.White,

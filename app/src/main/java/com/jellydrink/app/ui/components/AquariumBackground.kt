@@ -308,7 +308,7 @@ fun AquariumBackground(
 
             when (deco.id) {
                 // FISH - Movimento ultra-fluido con 5 fasi lente (67-127 secondi)
-                "fish_blue", "fish_orange", "turtle" -> {
+                "fish_blue", "fish_orange" -> {
                     // Pesci — nuoto prevalentemente orizzontale, realistico
 
                     // ORIZZONTALE — ampiezza grande, il pesce attraversa lo schermo
@@ -338,8 +338,31 @@ fun AquariumBackground(
                     when (deco.id) {
                         "fish_blue" -> drawRealisticBlueFish(fishX, fishY, 40f, swimPhase, index, direction)
                         "fish_orange" -> drawRealisticClownfish(fishX, fishY, 40f, swimPhase, index, direction)
-                        "turtle" -> drawRealisticTurtle(fishX, fishY, 45f, time, index, direction)
                     }
+                }
+
+                // TURTLE — nuoto lento, copre tutto l'acquario
+                "turtle" -> {
+                    // Drift orizzontale ampio — la tartaruga attraversa tutto lo schermo
+                    val tDriftX1 = sin(fishPhase1 + phaseOffset) * 0.35f
+                    val tDriftX2 = sin(fishPhase3 + phaseOffset * 1.618f) * 0.18f
+
+                    // Drift verticale piu' ampio dei pesci — la tartaruga sale e scende
+                    val tDriftY1 = cos(fishPhase2 + phaseOffset * 1.414f) * 0.14f
+                    val tDriftY2 = sin(fishPhase4 + phaseOffset * 2.236f) * 0.08f
+
+                    // Centro a meta' schermo cosi' copre tutta l'area
+                    val tCenterX = 0.50f
+                    val tCenterY = 0.48f
+
+                    val turtleX = w * (tCenterX + tDriftX1 + tDriftX2)
+                    val turtleY = (h * (tCenterY + tDriftY1 + tDriftY2)).coerceIn(h * 0.15f, h * 0.80f)
+
+                    val velocityX = cos(fishPhase1 + phaseOffset)
+                    val direction = if (velocityX > 0) 1f else -1f
+
+                    // Usa fishPhase2 per animazione zampe — ciclo lento e fluido (~83s wrapping)
+                    drawRealisticTurtle(turtleX, turtleY, 45f, fishPhase2, index, direction)
                 }
 
                 // SEAHORSE — drift verticale gentile, simile alla medusa
@@ -395,7 +418,7 @@ fun AquariumBackground(
                     // WalkSpeed: alto quando step1 è in transizione, basso in pausa
                     val walkSpeed = ((1f - step1 * step1) * 1.5f).coerceIn(0f, 1f)
 
-                    drawRealisticCrab(crabX, sandTop + 5f, 35f, time, walkSpeed)
+                    drawRealisticCrab(crabX, sandTop + 5f, 40f, time, walkSpeed)
                 }
             }
         }
