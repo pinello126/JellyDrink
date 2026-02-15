@@ -95,6 +95,7 @@ fun HistoryScreen(
                     WeeklyChart(
                         summaries = uiState.weekSummaries,
                         goalMl = uiState.goalMl,
+                        goalPerDay = uiState.goalPerDay,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(180.dp)
@@ -126,7 +127,10 @@ fun HistoryScreen(
             }
         } else {
             items(uiState.dailySummaries) { summary ->
-                DaySummaryCard(summary = summary, goalMl = uiState.goalMl)
+                DaySummaryCard(
+                    summary = summary,
+                    goalMl = uiState.goalPerDay[summary.date] ?: uiState.goalMl
+                )
             }
         }
 
@@ -203,20 +207,29 @@ private fun DaySummaryCard(
 private fun WeeklyChart(
     summaries: List<DailySummary>,
     goalMl: Int,
+    goalPerDay: Map<String, Int> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     val barColor = JellyBlue
     val goalLineColor = SuccessGreen
     val textColor = MaterialTheme.colorScheme.onSurfaceVariant
 
+    // Use the average of per-day goals for the goal line (fallback to global goal)
+    val avgGoal = if (goalPerDay.isNotEmpty()) {
+        val relevantGoals = summaries.map { goalPerDay[it.date] ?: goalMl }
+        relevantGoals.average().toInt()
+    } else {
+        goalMl
+    }
+
     Canvas(modifier = modifier) {
         val barWidth = size.width / (summaries.size * 2f)
-        val maxMl = maxOf(goalMl, summaries.maxOfOrNull { it.totalMl } ?: goalMl)
+        val maxMl = maxOf(avgGoal, summaries.maxOfOrNull { it.totalMl } ?: avgGoal)
         val chartHeight = size.height - 30f
         val chartBottom = chartHeight
 
-        // Linea obiettivo
-        val goalY = chartBottom - (goalMl.toFloat() / maxMl) * chartHeight
+        // Linea obiettivo (media dei goal del periodo)
+        val goalY = chartBottom - (avgGoal.toFloat() / maxMl) * chartHeight
         drawLine(
             color = goalLineColor.copy(alpha = 0.5f),
             start = Offset(0f, goalY),
@@ -229,9 +242,10 @@ private fun WeeklyChart(
 
         // Barre
         summaries.forEachIndexed { index, summary ->
+            val dayGoal = goalPerDay[summary.date] ?: goalMl
             val barHeight = (summary.totalMl.toFloat() / maxMl) * chartHeight
             val x = (index * 2 + 0.5f) * barWidth
-            val color = if (summary.totalMl >= goalMl) SuccessGreen else barColor
+            val color = if (summary.totalMl >= dayGoal) SuccessGreen else barColor
 
             drawRoundRect(
                 color = color,

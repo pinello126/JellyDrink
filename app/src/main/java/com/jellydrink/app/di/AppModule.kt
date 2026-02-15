@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.jellydrink.app.data.db.AppDatabase
 import com.jellydrink.app.data.db.dao.BadgeDao
 import com.jellydrink.app.data.db.dao.DailyChallengeDao
+import com.jellydrink.app.data.db.dao.DailyGoalDao
 import com.jellydrink.app.data.db.dao.DecorationDao
 import com.jellydrink.app.data.db.dao.JellyfishDao
 import com.jellydrink.app.data.db.dao.UserProfileDao
@@ -32,7 +33,8 @@ object AppModule {
                 AppDatabase.MIGRATION_1_2,
                 AppDatabase.MIGRATION_2_3,
                 AppDatabase.MIGRATION_3_4,
-                AppDatabase.MIGRATION_4_5
+                AppDatabase.MIGRATION_4_5,
+                AppDatabase.MIGRATION_5_6
             )
             .build()
     }
@@ -65,5 +67,10 @@ object AppModule {
     @Provides
     fun provideDecorationDao(database: AppDatabase): DecorationDao {
         return database.decorationDao()
+    }
+
+    @Provides
+    fun provideDailyGoalDao(database: AppDatabase): DailyGoalDao {
+        return database.dailyGoalDao()
     }
 }

@@ -9,8 +9,10 @@ import com.jellydrink.app.data.db.dao.DailyChallengeDao
 import com.jellydrink.app.data.db.dao.DecorationDao
 import com.jellydrink.app.data.db.dao.JellyfishDao
 import com.jellydrink.app.data.db.dao.UserProfileDao
+import com.jellydrink.app.data.db.dao.DailyGoalDao
 import com.jellydrink.app.data.db.dao.WaterIntakeDao
 import com.jellydrink.app.data.db.entity.BadgeEntity
+import com.jellydrink.app.data.db.entity.DailyGoalEntity
 import com.jellydrink.app.data.db.entity.DailyChallengeEntity
 import com.jellydrink.app.data.db.entity.DecorationEntity
 import com.jellydrink.app.data.db.entity.JellyfishEntity
@@ -24,9 +26,10 @@ import com.jellydrink.app.data.db.entity.WaterIntakeEntity
         UserProfileEntity::class,
         DailyChallengeEntity::class,
         JellyfishEntity::class,
-        DecorationEntity::class
+        DecorationEntity::class,
+        DailyGoalEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -36,6 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyChallengeDao(): DailyChallengeDao
     abstract fun jellyfishDao(): JellyfishDao
     abstract fun decorationDao(): DecorationDao
+    abstract fun dailyGoalDao(): DailyGoalDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -134,6 +138,17 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE user_profile ADD COLUMN spendableXp INTEGER NOT NULL DEFAULT 0")
                 // Copy current xp to spendableXp for existing users
                 db.execSQL("UPDATE user_profile SET spendableXp = xp")
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS daily_goal (
+                        date TEXT PRIMARY KEY NOT NULL,
+                        goalMl INTEGER NOT NULL
+                    )
+                """.trimIndent())
             }
         }
     }

@@ -15,19 +15,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -67,7 +63,8 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    var newGlassInput by remember { mutableStateOf("") }
+    var editingGlassIndex by remember { mutableStateOf(-1) }
+    var editGlassInput by remember { mutableStateOf("") }
 
     LaunchedEffect(uiState.resetDone) {
         if (uiState.resetDone) {
@@ -130,7 +127,7 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Bicchieri personalizzati ---
+        // --- Bicchieri predefiniti ---
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -143,62 +140,27 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+                Text(
+                    text = "Tocca per modificare",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    uiState.customGlasses.forEach { glass ->
+                    uiState.customGlasses.forEachIndexed { index, glass ->
                         InputChip(
                             selected = false,
-                            onClick = { },
-                            label = { Text(formatLiters(glass)) },
-                            trailingIcon = {
-                                if (uiState.customGlasses.size > 1) {
-                                    IconButton(
-                                        onClick = { viewModel.removeGlass(glass) }
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Close,
-                                            contentDescription = "Rimuovi",
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                            }
+                            onClick = {
+                                editingGlassIndex = index
+                                editGlassInput = "%.2f".format(glass / 1000f)
+                            },
+                            label = { Text(formatLiters(glass)) }
                         )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = newGlassInput,
-                        onValueChange = { newGlassInput = it.filter { c -> c.isDigit() } },
-                        label = { Text("Nuovo (ml → litri)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    AssistChip(
-                        onClick = {
-                            val amount = newGlassInput.toIntOrNull()
-                            if (amount != null && amount > 0) {
-                                viewModel.addGlass(amount)
-                                newGlassInput = ""
-                            }
-                        },
-                        label = { Text("Aggiungi") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Add, contentDescription = "Aggiungi")
-                        }
-                    )
                 }
             }
         }
@@ -263,6 +225,53 @@ fun SettingsScreen(
 
         // Spazio in fondo per la bottom nav
         Spacer(modifier = Modifier.height(72.dp))
+    }
+
+    // Dialog modifica bicchiere
+    if (editingGlassIndex >= 0) {
+        AlertDialog(
+            onDismissRequest = { editingGlassIndex = -1 },
+            title = { Text("Modifica bicchiere") },
+            text = {
+                OutlinedTextField(
+                    value = editGlassInput,
+                    onValueChange = { input ->
+                        // Allow digits, dot, and comma; max 4 chars (e.g. "1.50")
+                        val filtered = input.replace(',', '.')
+                            .filter { c -> c.isDigit() || c == '.' }
+                        // Allow at most one dot and max 2 decimal places
+                        val parts = filtered.split(".")
+                        editGlassInput = when {
+                            parts.size <= 1 -> filtered
+                            else -> parts[0] + "." + parts[1].take(2)
+                        }
+                    },
+                    label = { Text("Valore in litri") },
+                    suffix = { Text("L") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val liters = editGlassInput.replace(',', '.').toFloatOrNull()
+                        if (liters != null && liters > 0f) {
+                            val ml = (liters * 1000).toInt()
+                            viewModel.updateGlassAt(editingGlassIndex, ml)
+                        }
+                        editingGlassIndex = -1
+                    }
+                ) {
+                    Text("Salva")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingGlassIndex = -1 }) {
+                    Text("Annulla")
+                }
+            }
+        )
     }
 
     // Dialog conferma reset

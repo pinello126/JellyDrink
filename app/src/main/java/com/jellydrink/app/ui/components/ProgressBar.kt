@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.sp
 private fun formatLiters(ml: Int): String {
     return when {
         ml % 1000 == 0 -> "${ml / 1000}L"
-        else -> "%.1fL".format(ml / 1000f)
+        ml % 100 == 0 -> "%.1fL".format(ml / 1000f)
+        else -> "%.2fL".format(ml / 1000f)
     }
 }
 

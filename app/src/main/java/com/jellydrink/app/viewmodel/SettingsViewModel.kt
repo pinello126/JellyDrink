@@ -54,18 +54,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun addGlass(amount: Int) {
+    fun updateGlassAt(index: Int, newAmountMl: Int) {
         val current = _uiState.value.customGlasses.toMutableList()
-        if (amount > 0 && !current.contains(amount)) {
-            current.add(amount)
-            updateGlasses(current)
-        }
-    }
-
-    fun removeGlass(amount: Int) {
-        val current = _uiState.value.customGlasses.toMutableList()
-        if (current.size > 1) {
-            current.remove(amount)
+        if (index in current.indices && newAmountMl > 0) {
+            current[index] = newAmountMl
             updateGlasses(current)
         }
     }
