@@ -10,12 +10,14 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.jellydrink.app.data.db.dao.BadgeDao
 import com.jellydrink.app.data.db.dao.DailyChallengeDao
+import com.jellydrink.app.data.db.dao.DailyGoalDao
 import com.jellydrink.app.data.db.dao.DailySummary
 import com.jellydrink.app.data.db.dao.DecorationDao
 import com.jellydrink.app.data.db.dao.JellyfishDao
 import com.jellydrink.app.data.db.dao.UserProfileDao
 import com.jellydrink.app.data.db.dao.WaterIntakeDao
 import com.jellydrink.app.data.db.entity.BadgeEntity
+import com.jellydrink.app.data.db.entity.DailyGoalEntity
 import com.jellydrink.app.data.db.entity.DailyChallengeEntity
 import com.jellydrink.app.data.db.entity.DecorationEntity
 import com.jellydrink.app.data.db.entity.JellyfishEntity
@@ -44,6 +46,7 @@ class WaterRepository @Inject constructor(
     private val dailyChallengeDao: DailyChallengeDao,
     private val jellyfishDao: JellyfishDao,
     private val decorationDao: DecorationDao,
+    private val dailyGoalDao: DailyGoalDao,
     @ApplicationContext private val context: Context
 ) {
     companion object {
@@ -153,6 +156,15 @@ class WaterRepository @Inject constructor(
         initJellyfishCollection()
         initDecorations()
         generateDailyChallenge()
+        seedDailyGoals()
+    }
+
+    private suspend fun seedDailyGoals() {
+        val currentGoal = getDailyGoal().first()
+        // Seed historical dates missing from daily_goal with current goal
+        dailyGoalDao.seedMissingDates(currentGoal)
+        // Ensure today has a snapshot
+        dailyGoalDao.insertIfAbsent(DailyGoalEntity(date = today(), goalMl = currentGoal))
     }
 
     private suspend fun initProfile() {
@@ -209,9 +221,12 @@ class WaterRepository @Inject constructor(
             )
         )
 
+        // Snapshot today's goal (only if not already present)
+        val goal = getDailyGoal().first()
+        dailyGoalDao.insertIfAbsent(DailyGoalEntity(date = now, goalMl = goal))
+
         // Update profile
         val profile = userProfileDao.getProfileSync() ?: UserProfileEntity()
-        val goal = getDailyGoal().first()
         val currentTotal = waterIntakeDao.getTotalForDate(now).first()
         val previousTotal = currentTotal - amountMl
         val streak = calculateStreak(goal)
@@ -284,6 +299,9 @@ class WaterRepository @Inject constructor(
     suspend fun getDailySummary(startDate: String, endDate: String): List<DailySummary> =
         waterIntakeDao.getDailySummary(startDate, endDate)
 
+    suspend fun getGoalsForRange(startDate: String, endDate: String): Map<String, Int> =
+        dailyGoalDao.getGoalsForRange(startDate, endDate).associate { it.date to it.goalMl }
+
     // --- Profile & XP ---
 
     fun getProfile(): Flow<UserProfileEntity?> = userProfileDao.getProfile()
@@ -313,6 +331,8 @@ class WaterRepository @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[DAILY_GOAL_KEY] = goal
         }
+        // Update today's snapshot with the new goal
+        dailyGoalDao.upsert(DailyGoalEntity(date = today(), goalMl = goal))
     }
 
     fun getCustomGlasses(): Flow<List<Int>> = context.dataStore.data.map { prefs ->
@@ -641,6 +661,7 @@ class WaterRepository @Inject constructor(
         dailyChallengeDao.deleteAll()
         jellyfishDao.deleteAll()
         decorationDao.deleteAll()
+        dailyGoalDao.deleteAll()
         context.dataStore.edit { it.clear() }
 
         // Re-initialize

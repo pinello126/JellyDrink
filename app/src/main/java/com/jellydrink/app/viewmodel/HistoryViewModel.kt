@@ -17,6 +17,7 @@ import javax.inject.Inject
 data class HistoryUiState(
     val dailySummaries: List<DailySummary> = emptyList(),
     val goalMl: Int = 2000,
+    val goalPerDay: Map<String, Int> = emptyMap(),
     val weekSummaries: List<DailySummary> = emptyList(),
     val isLoading: Boolean = true
 )
@@ -52,6 +53,11 @@ class HistoryViewModel @Inject constructor(
                 today.format(dateFormatter)
             )
 
+            val goalPerDay = repository.getGoalsForRange(
+                thirtyDaysAgo.format(dateFormatter),
+                today.format(dateFormatter)
+            )
+
             // Riempi i giorni mancanti nella settimana
             val filledWeek = mutableListOf<DailySummary>()
             for (i in 0L..6L) {
@@ -63,6 +69,7 @@ class HistoryViewModel @Inject constructor(
             _uiState.value = HistoryUiState(
                 dailySummaries = monthlySummary.reversed(),
                 goalMl = goal,
+                goalPerDay = goalPerDay,
                 weekSummaries = filledWeek,
                 isLoading = false
             )

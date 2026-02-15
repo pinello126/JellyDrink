@@ -19,12 +19,13 @@ interface WaterIntakeDao {
     fun getIntakesForDate(date: String): Flow<List<WaterIntakeEntity>>
 
     @Query("""
-        SELECT DISTINCT date FROM water_intake
-        GROUP BY date
-        HAVING SUM(amountMl) >= :goal
-        ORDER BY date DESC
+        SELECT wi.date FROM (
+            SELECT date, SUM(amountMl) as totalMl FROM water_intake GROUP BY date
+        ) wi LEFT JOIN daily_goal dg ON wi.date = dg.date
+        WHERE wi.totalMl >= COALESCE(dg.goalMl, :fallbackGoal)
+        ORDER BY wi.date DESC
     """)
-    suspend fun getDatesWithGoalMet(goal: Int): List<String>
+    suspend fun getDatesWithGoalMet(fallbackGoal: Int): List<String>
 
     @Query("""
         SELECT date, SUM(amountMl) as totalMl
