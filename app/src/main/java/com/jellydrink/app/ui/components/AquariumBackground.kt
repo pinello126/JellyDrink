@@ -54,6 +54,9 @@ fun AquariumBackground(
     // Fish swim animation phase (tail, fins)
     val swimPhase by inf.smoothPhase(3001, "swim")
 
+    // Treasure chest open/close cycle (4 seconds)
+    val chestPhase by inf.smoothPhase(4000, "chest")
+
     // Derived smooth values using pure trigonometry (no multipliers on phase!)
     val time = phase1
     val slowTime = phaseSlow
@@ -219,7 +222,7 @@ fun AquariumBackground(
 
         // === ROCCE / CORALLI ===
         drawRock(w * 0.35f, sandTop - 2f, 18f, 14f, RockDark, RockLight)
-        drawRock(w * 0.62f, sandTop - 4f, 24f, 18f, RockDark, RockLight)
+        drawRealisticRock(w * 0.28f, sandTop + 80f, 95f, 70f)
         drawRock(w * 0.10f, sandTop - 1f, 14f, 10f, Color(0xFF505860), Color(0xFF687078))
 
 
@@ -388,9 +391,8 @@ fun AquariumBackground(
 
                 // BOTTOM DECORATIONS - Static or minimal movement
                 "starfish" -> {
-                    val starX = w * baseX
-                    val starY = sandTop + 8f + sin(phase4 + index) * 2f
-                    drawStarfish(starX, starY, 18f, StarfishOrange, StarfishDark)
+                    // Appoggiata sulla roccia vicino al forziere (x=0.28)
+                    drawStarfish(w * 0.28f, sandTop + 56f, 22f)
                 }
                 "coral_pink" -> {
                     // 3 coralli sovrapposti in basso a destra, immersi nella sabbia
@@ -400,7 +402,8 @@ fun AquariumBackground(
                     drawCoral(w * 0.88f, sandDepth, 88f)
                 }
                 "treasure" -> {
-                    drawTreasureChest(w * baseX, sandTop - 8f, 30f, phase2)
+                    // Posizionato a sinistra, opposto ai coralli, immerso nella sabbia
+                    drawTreasureChest(w * 0.15f, sandTop + 65f, 50f, chestPhase)
                 }
                 "crab" -> {
                     // Staircase: due onde atan a frequenze diverse creano
@@ -579,6 +582,194 @@ internal fun DrawScope.drawRock(cx: Float, cy: Float, rw: Float, rh: Float, dark
         color = Color.White.copy(alpha = 0.08f),
         topLeft = Offset(cx - rw * 0.2f, cy - rh * 0.3f),
         size = Size(rw * 0.3f, rh * 0.2f)
+    )
+}
+
+// --- Roccia realistica grande (per decorazione stella marina) ---
+internal fun DrawScope.drawRealisticRock(cx: Float, cy: Float, rw: Float, rh: Float) {
+    // Palette roccia sottomarina
+    val rockDeep = Color(0xFF3A3D42)
+    val rockDark = Color(0xFF4E5258)
+    val rockMid = Color(0xFF5E6368)
+    val rockLight = Color(0xFF737880)
+    val rockHi = Color(0xFF8A9098)
+    val rockPale = Color(0xFFA0A8B0)
+    val mossGreen = Color(0xFF4A6B40)
+    val mossDark = Color(0xFF2E4428)
+
+    // ---- SHADOW ----
+    drawOval(
+        color = Color.Black.copy(alpha = 0.2f),
+        topLeft = Offset(cx - rw * 0.52f + 3f, cy - rh * 0.2f + 3f),
+        size = Size(rw * 1.04f, rh * 0.5f)
+    )
+
+    // ---- MAIN BODY — irregular shape using overlapping ovals ----
+    // Base large oval
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(rockLight, rockMid, rockDark, rockDeep),
+            center = Offset(cx - rw * 0.1f, cy - rh * 0.15f),
+            radius = rw * 0.65f
+        ),
+        topLeft = Offset(cx - rw * 0.5f, cy - rh * 0.35f),
+        size = Size(rw, rh * 0.7f)
+    )
+
+    // Bump left (makes shape irregular)
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(rockMid, rockDark),
+            center = Offset(cx - rw * 0.3f, cy - rh * 0.1f),
+            radius = rw * 0.3f
+        ),
+        topLeft = Offset(cx - rw * 0.55f, cy - rh * 0.28f),
+        size = Size(rw * 0.45f, rh * 0.55f)
+    )
+
+    // Bump right-top
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(rockLight, rockMid),
+            center = Offset(cx + rw * 0.2f, cy - rh * 0.2f),
+            radius = rw * 0.28f
+        ),
+        topLeft = Offset(cx + rw * 0.05f, cy - rh * 0.38f),
+        size = Size(rw * 0.42f, rh * 0.45f)
+    )
+
+    // Bump top-center (creates uneven top surface)
+    drawOval(
+        brush = Brush.radialGradient(
+            colors = listOf(rockHi, rockMid, rockDark),
+            center = Offset(cx + rw * 0.05f, cy - rh * 0.28f),
+            radius = rw * 0.25f
+        ),
+        topLeft = Offset(cx - rw * 0.15f, cy - rh * 0.42f),
+        size = Size(rw * 0.38f, rh * 0.3f)
+    )
+
+    // ---- 3D SHADING ----
+    // Top highlight (light from above)
+    drawOval(
+        brush = Brush.verticalGradient(
+            listOf(rockPale.copy(alpha = 0.2f), Color.Transparent),
+            startY = cy - rh * 0.35f,
+            endY = cy - rh * 0.1f
+        ),
+        topLeft = Offset(cx - rw * 0.35f, cy - rh * 0.38f),
+        size = Size(rw * 0.6f, rh * 0.25f)
+    )
+
+    // Bottom shadow gradient
+    drawOval(
+        brush = Brush.verticalGradient(
+            listOf(Color.Transparent, Color.Black.copy(alpha = 0.15f)),
+            startY = cy,
+            endY = cy + rh * 0.35f
+        ),
+        topLeft = Offset(cx - rw * 0.45f, cy - rh * 0.1f),
+        size = Size(rw * 0.9f, rh * 0.45f)
+    )
+
+    // Left edge shadow (directional light from top-right)
+    drawOval(
+        brush = Brush.horizontalGradient(
+            listOf(Color.Black.copy(alpha = 0.12f), Color.Transparent),
+            startX = cx - rw * 0.5f,
+            endX = cx - rw * 0.2f
+        ),
+        topLeft = Offset(cx - rw * 0.52f, cy - rh * 0.3f),
+        size = Size(rw * 0.35f, rh * 0.6f)
+    )
+
+    // ---- SURFACE DETAILS ----
+    // Cracks / crevices
+    val cracks = listOf(
+        Offset(cx - rw * 0.25f, cy - rh * 0.15f) to Offset(cx - rw * 0.05f, cy + rh * 0.05f),
+        Offset(cx + rw * 0.1f, cy - rh * 0.25f) to Offset(cx + rw * 0.2f, cy - rh * 0.05f),
+        Offset(cx - rw * 0.1f, cy - rh * 0.28f) to Offset(cx + rw * 0.08f, cy - rh * 0.18f),
+        Offset(cx + rw * 0.15f, cy) to Offset(cx + rw * 0.3f, cy + rh * 0.1f),
+    )
+    for ((start, end) in cracks) {
+        drawLine(rockDeep.copy(alpha = 0.3f), start, end, strokeWidth = 0.8f, cap = StrokeCap.Round)
+        // Highlight next to crack
+        drawLine(
+            rockPale.copy(alpha = 0.1f),
+            Offset(start.x + 1f, start.y - 1f),
+            Offset(end.x + 1f, end.y - 1f),
+            strokeWidth = 0.5f, cap = StrokeCap.Round
+        )
+    }
+
+    // Pits / pores
+    val pits = listOf(
+        Offset(cx - rw * 0.2f, cy - rh * 0.05f),
+        Offset(cx + rw * 0.15f, cy - rh * 0.1f),
+        Offset(cx, cy + rh * 0.08f),
+        Offset(cx - rw * 0.3f, cy - rh * 0.2f),
+        Offset(cx + rw * 0.25f, cy + rh * 0.02f),
+        Offset(cx + rw * 0.05f, cy - rh * 0.22f),
+    )
+    for ((idx, pit) in pits.withIndex()) {
+        val pitR = rw * (0.012f + (idx % 3) * 0.005f)
+        drawCircle(rockDeep.copy(alpha = 0.25f), pitR, pit)
+        drawCircle(rockPale.copy(alpha = 0.08f), pitR * 0.6f, Offset(pit.x - 0.5f, pit.y - 0.5f))
+    }
+
+    // Mineral speckles (lighter spots)
+    val speckles = listOf(
+        Offset(cx - rw * 0.15f, cy - rh * 0.22f),
+        Offset(cx + rw * 0.1f, cy - rh * 0.15f),
+        Offset(cx + rw * 0.22f, cy - rh * 0.08f),
+        Offset(cx - rw * 0.08f, cy + rh * 0.05f),
+        Offset(cx + rw * 0.3f, cy - rh * 0.18f),
+    )
+    for (sp in speckles) {
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(rockPale.copy(alpha = 0.2f), Color.Transparent),
+                center = sp, radius = rw * 0.04f
+            ),
+            radius = rw * 0.03f, center = sp
+        )
+    }
+
+    // ---- MOSS / ALGAE PATCHES (underwater feel) ----
+    val mosses = listOf(
+        Triple(cx - rw * 0.32f, cy - rh * 0.25f, rw * 0.1f),
+        Triple(cx + rw * 0.2f, cy - rh * 0.3f, rw * 0.08f),
+        Triple(cx - rw * 0.1f, cy - rh * 0.33f, rw * 0.12f),
+        Triple(cx + rw * 0.35f, cy - rh * 0.15f, rw * 0.06f),
+    )
+    for ((mx, my, mr) in mosses) {
+        drawOval(
+            brush = Brush.radialGradient(
+                listOf(mossGreen.copy(alpha = 0.3f), mossDark.copy(alpha = 0.1f), Color.Transparent),
+                center = Offset(mx, my), radius = mr * 1.5f
+            ),
+            topLeft = Offset(mx - mr, my - mr * 0.6f),
+            size = Size(mr * 2f, mr * 1.2f)
+        )
+    }
+
+    // ---- SPECULAR HIGHLIGHT (wet rock shine) ----
+    drawOval(
+        brush = Brush.radialGradient(
+            listOf(Color.White.copy(alpha = 0.12f), Color.Transparent),
+            center = Offset(cx + rw * 0.05f, cy - rh * 0.25f),
+            radius = rw * 0.2f
+        ),
+        topLeft = Offset(cx - rw * 0.1f, cy - rh * 0.35f),
+        size = Size(rw * 0.3f, rh * 0.18f)
+    )
+
+    // ---- OUTLINE (subtle, irregular) ----
+    drawOval(
+        color = rockDeep.copy(alpha = 0.15f),
+        topLeft = Offset(cx - rw * 0.5f, cy - rh * 0.35f),
+        size = Size(rw, rh * 0.7f),
+        style = Stroke(1f)
     )
 }
 

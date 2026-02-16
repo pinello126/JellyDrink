@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,8 +53,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -373,10 +381,16 @@ private fun DecorationCard(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = icon,
-                    fontSize = 28.sp
-                )
+                if (decoration.id == "fish_orange") {
+                    Canvas(modifier = Modifier.size(36.dp)) {
+                        drawClownfish(this)
+                    }
+                } else {
+                    Text(
+                        text = icon,
+                        fontSize = 28.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -623,5 +637,116 @@ private fun JellyfishCard(
                 }
             }
         }
+    }
+}
+
+private fun drawClownfish(scope: DrawScope) {
+    with(scope) {
+        val w = size.width
+        val h = size.height
+        val cx = w * 0.45f
+        val cy = h * 0.5f
+        val bodyW = w * 0.40f
+        val bodyH = h * 0.28f
+
+        val clownOrange = Color(0xFFFF6F00)
+        val stripeWhite = Color(0xFFF5F5F5)
+        val outlineBlack = Color(0xFF1A1A1A)
+
+        // --- Tail fin ---
+        val tailPath = Path().apply {
+            moveTo(cx + bodyW * 0.75f, cy)
+            lineTo(cx + bodyW * 1.35f, cy - bodyH * 0.9f)
+            quadraticBezierTo(cx + bodyW * 1.1f, cy, cx + bodyW * 1.35f, cy + bodyH * 0.9f)
+            close()
+        }
+        drawPath(tailPath, color = clownOrange)
+        drawPath(tailPath, color = outlineBlack, style = Stroke(width = 1.8f))
+
+        // --- Body (ellipse) ---
+        drawOval(
+            color = clownOrange,
+            topLeft = Offset(cx - bodyW, cy - bodyH),
+            size = Size(bodyW * 2f, bodyH * 2f)
+        )
+
+        // --- White stripes with black edges (3 stripes) ---
+        val stripeWidth = bodyW * 0.12f
+
+        // Stripe 1 - near head
+        val s1x = cx - bodyW * 0.55f
+        val s1Path = Path().apply {
+            moveTo(s1x, cy - bodyH * 0.85f)
+            quadraticBezierTo(s1x - stripeWidth * 0.4f, cy, s1x, cy + bodyH * 0.85f)
+            lineTo(s1x + stripeWidth, cy + bodyH * 0.82f)
+            quadraticBezierTo(s1x + stripeWidth * 0.6f, cy, s1x + stripeWidth, cy - bodyH * 0.82f)
+            close()
+        }
+        drawPath(s1Path, color = stripeWhite)
+        drawPath(s1Path, color = outlineBlack, style = Stroke(width = 1.4f))
+
+        // Stripe 2 - center
+        val s2x = cx - stripeWidth * 0.5f
+        val s2Path = Path().apply {
+            moveTo(s2x, cy - bodyH * 0.97f)
+            quadraticBezierTo(s2x - stripeWidth * 0.3f, cy, s2x, cy + bodyH * 0.97f)
+            lineTo(s2x + stripeWidth, cy + bodyH * 0.95f)
+            quadraticBezierTo(s2x + stripeWidth * 0.7f, cy, s2x + stripeWidth, cy - bodyH * 0.95f)
+            close()
+        }
+        drawPath(s2Path, color = stripeWhite)
+        drawPath(s2Path, color = outlineBlack, style = Stroke(width = 1.4f))
+
+        // Stripe 3 - near tail
+        val s3x = cx + bodyW * 0.42f
+        val s3Path = Path().apply {
+            moveTo(s3x, cy - bodyH * 0.72f)
+            quadraticBezierTo(s3x - stripeWidth * 0.3f, cy, s3x, cy + bodyH * 0.72f)
+            lineTo(s3x + stripeWidth, cy + bodyH * 0.60f)
+            quadraticBezierTo(s3x + stripeWidth * 0.7f, cy, s3x + stripeWidth, cy - bodyH * 0.60f)
+            close()
+        }
+        drawPath(s3Path, color = stripeWhite)
+        drawPath(s3Path, color = outlineBlack, style = Stroke(width = 1.4f))
+
+        // --- Dorsal fin (top) ---
+        val dorsalPath = Path().apply {
+            moveTo(cx - bodyW * 0.2f, cy - bodyH * 0.9f)
+            quadraticBezierTo(cx, cy - bodyH * 1.7f, cx + bodyW * 0.3f, cy - bodyH * 0.85f)
+        }
+        drawPath(dorsalPath, color = clownOrange, style = Stroke(width = 4f, cap = StrokeCap.Round))
+        drawPath(dorsalPath, color = outlineBlack, style = Stroke(width = 1.4f, cap = StrokeCap.Round))
+
+        // --- Pectoral fin (bottom) ---
+        val pectoralPath = Path().apply {
+            moveTo(cx - bodyW * 0.1f, cy + bodyH * 0.85f)
+            quadraticBezierTo(cx + bodyW * 0.1f, cy + bodyH * 1.55f, cx + bodyW * 0.35f, cy + bodyH * 0.80f)
+        }
+        drawPath(pectoralPath, color = clownOrange, style = Stroke(width = 3.5f, cap = StrokeCap.Round))
+        drawPath(pectoralPath, color = outlineBlack, style = Stroke(width = 1.2f, cap = StrokeCap.Round))
+
+        // --- Body outline ---
+        drawOval(
+            color = outlineBlack,
+            topLeft = Offset(cx - bodyW, cy - bodyH),
+            size = Size(bodyW * 2f, bodyH * 2f),
+            style = Stroke(width = 2f)
+        )
+
+        // --- Eye ---
+        val eyeX = cx - bodyW * 0.55f
+        val eyeY = cy - bodyH * 0.15f
+        val eyeR = bodyH * 0.28f
+        drawCircle(color = Color.White, radius = eyeR, center = Offset(eyeX, eyeY))
+        drawCircle(color = outlineBlack, radius = eyeR * 0.55f, center = Offset(eyeX + eyeR * 0.1f, eyeY))
+        drawCircle(color = Color.White, radius = eyeR * 0.2f, center = Offset(eyeX + eyeR * 0.25f, eyeY - eyeR * 0.2f))
+        drawCircle(color = outlineBlack, radius = eyeR, center = Offset(eyeX, eyeY), style = Stroke(width = 1.2f))
+
+        // --- Mouth ---
+        val mouthPath = Path().apply {
+            moveTo(cx - bodyW * 0.85f, cy + bodyH * 0.15f)
+            quadraticBezierTo(cx - bodyW * 0.75f, cy + bodyH * 0.35f, cx - bodyW * 0.65f, cy + bodyH * 0.2f)
+        }
+        drawPath(mouthPath, color = outlineBlack, style = Stroke(width = 1.4f, cap = StrokeCap.Round))
     }
 }
