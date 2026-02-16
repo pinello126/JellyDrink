@@ -16,6 +16,7 @@ import com.jellydrink.app.data.repository.WaterRepository
 import com.jellydrink.app.notification.WaterNotificationHelper
 import com.jellydrink.app.ui.navigation.JellyDrinkNavGraph
 import com.jellydrink.app.ui.theme.JellyDrinkTheme
+import com.jellydrink.app.worker.MidnightResetWorker
 import com.jellydrink.app.worker.StreakDangerWorker
 import com.jellydrink.app.worker.WaterReminderWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -111,6 +112,27 @@ class MainActivity : ComponentActivity() {
             "streak_danger",
             ExistingPeriodicWorkPolicy.KEEP,
             streakRequest
+        )
+
+        // Midnight reset - aggiorna notifica e widget a mezzanotte
+        val midnightTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        val midnightDelay = midnightTime.timeInMillis - Calendar.getInstance().timeInMillis
+
+        val midnightRequest = PeriodicWorkRequestBuilder<MidnightResetWorker>(
+            1, TimeUnit.DAYS
+        ).setInitialDelay(midnightDelay, TimeUnit.MILLISECONDS).build()
+
+        workManager.enqueueUniquePeriodicWork(
+            "midnight_reset",
+            ExistingPeriodicWorkPolicy.KEEP,
+            midnightRequest
         )
     }
 
