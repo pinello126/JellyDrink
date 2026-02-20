@@ -23,9 +23,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jellydrink.app.data.repository.WaterRepository
 import kotlin.math.PI
 import kotlin.math.cos
@@ -40,10 +40,11 @@ private val RibbonRed = Color(0xFFD03030)
 private val RibbonDark = Color(0xFF981818)
 private val StarColor = Color(0xFFFFFFFF)
 
-// Colori locked
-private val LockedGray = Color(0xFF808080)
-private val LockedLight = Color(0xFFB0B0B0)
-private val LockedDark = Color(0xFF606060)
+// Palette azzurra per le medaglie di Giorni Attivi, Livelli, Sfide e Record
+private val AzzurroHi   = Color(0xFFBBDEFB)
+private val AzzurroMid  = Color(0xFF64B5F6)
+private val AzzurroDark = Color(0xFF1565C0)
+private val AzzurroDeep = Color(0xFF0D47A1)
 
 @Composable
 fun BadgeCard(
@@ -66,19 +67,9 @@ fun BadgeCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Medaglia o emoji
-            if (badge.isEarned) {
-                Canvas(modifier = Modifier.size(52.dp)) {
-                    drawMedal(badge.type)
-                }
-            } else {
-                // Badge locked - mostra emoji in grigio
-                Text(
-                    text = badge.icon,
-                    fontSize = 32.sp,
-                    modifier = Modifier.size(52.dp),
-                    color = Color.Gray.copy(alpha = 0.3f)
-                )
+            // Sempre medaglia: dorata se sbloccata, grigia se locked
+            Canvas(modifier = Modifier.size(52.dp)) {
+                drawMedal(badge.category, locked = !badge.isEarned)
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -121,12 +112,27 @@ fun BadgeCard(
     }
 }
 
-private fun DrawScope.drawMedal(type: String) {
+private fun DrawScope.drawMedal(category: String, locked: Boolean = false) {
     val w = size.width
     val h = size.height
     val cx = w / 2f
     val cy = h / 2f
     val medalR = w * 0.36f
+
+    // Categorie che usano la medaglia azzurra
+    val isBlue = category in listOf("Giorni Attivi", "Livelli", "Sfide e Record")
+
+    // Palette: azzurra o dorata (il locked viene gestito via saveLayerAlpha)
+    val ribbonMain  = RibbonRed
+    val ribbonEdge  = RibbonDark
+    val medalHi     = if (isBlue) AzzurroHi   else GoldLight
+    val medalMid    = if (isBlue) AzzurroMid  else GoldMain
+    val medalDark   = if (isBlue) AzzurroDark else GoldDark
+    val medalDeep   = if (isBlue) AzzurroDeep else GoldDeep
+
+    // Per le medaglie locked: sbiadisce l'intera medaglia con alpha ~36%
+    val nativeCanvas = drawContext.canvas.nativeCanvas
+    if (locked) nativeCanvas.saveLayerAlpha(null, 92)
 
     // Nastro (ribbon) dietro la medaglia
     val ribbonW = medalR * 0.45f
@@ -142,8 +148,8 @@ private fun DrawScope.drawMedal(type: String) {
         lineTo(cx + ribbonW * 0.2f, ribbonTop)
         close()
     }
-    drawPath(leftRibbon, RibbonRed)
-    drawPath(leftRibbon, RibbonDark.copy(alpha = 0.3f), style = Stroke(1f))
+    drawPath(leftRibbon, ribbonMain)
+    drawPath(leftRibbon, ribbonEdge.copy(alpha = 0.3f), style = Stroke(1f))
 
     // Nastro destro
     val rightRibbon = Path().apply {
@@ -154,8 +160,8 @@ private fun DrawScope.drawMedal(type: String) {
         lineTo(cx + ribbonW * 0.3f, ribbonTop)
         close()
     }
-    drawPath(rightRibbon, RibbonRed.copy(alpha = 0.85f))
-    drawPath(rightRibbon, RibbonDark.copy(alpha = 0.3f), style = Stroke(1f))
+    drawPath(rightRibbon, ribbonMain.copy(alpha = 0.85f))
+    drawPath(rightRibbon, ribbonEdge.copy(alpha = 0.3f), style = Stroke(1f))
 
     // Ombra medaglia
     drawCircle(
@@ -164,10 +170,10 @@ private fun DrawScope.drawMedal(type: String) {
         center = Offset(cx + 1.5f, cy + 1.5f)
     )
 
-    // Corpo medaglia — gradiente dorato
+    // Corpo medaglia
     drawCircle(
         brush = Brush.radialGradient(
-            colors = listOf(GoldLight, GoldMain, GoldDark, GoldDeep),
+            colors = listOf(medalHi, medalMid, medalDark, medalDeep),
             center = Offset(cx - medalR * 0.2f, cy - medalR * 0.2f),
             radius = medalR * 1.5f
         ),
@@ -175,9 +181,9 @@ private fun DrawScope.drawMedal(type: String) {
         center = Offset(cx, cy)
     )
 
-    // Bordo esterno medaglia
+    // Bordo esterno
     drawCircle(
-        color = GoldDeep,
+        color = medalDeep,
         radius = medalR,
         center = Offset(cx, cy),
         style = Stroke(2.5f)
@@ -185,13 +191,13 @@ private fun DrawScope.drawMedal(type: String) {
 
     // Anello interno
     drawCircle(
-        color = GoldDeep.copy(alpha = 0.5f),
+        color = medalDeep.copy(alpha = 0.5f),
         radius = medalR * 0.82f,
         center = Offset(cx, cy),
         style = Stroke(1.2f)
     )
 
-    // Highlight speculare
+    // Highlight speculare (meno intenso se locked)
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(Color.White.copy(alpha = 0.45f), Color.Transparent),
@@ -202,15 +208,17 @@ private fun DrawScope.drawMedal(type: String) {
         center = Offset(cx - medalR * 0.15f, cy - medalR * 0.2f)
     )
 
-    // Icona centrale in base al tipo
-    when (type) {
-        "first_sip" -> drawWaterDrop(cx, cy, medalR * 0.4f)
-        "daily_goal" -> drawStar(cx, cy, medalR * 0.45f, 5)
-        "streak_3" -> drawFlame(cx, cy, medalR * 0.4f)
-        "streak_7" -> drawFlame(cx, cy, medalR * 0.45f)
-        "streak_30" -> drawDoubleStar(cx, cy, medalR * 0.4f)
-        else -> drawStar(cx, cy, medalR * 0.4f, 5)
+    when (category) {
+        "Primi Passi"    -> drawWaterDrop(cx, cy, medalR * 0.42f)
+        "Streak"         -> drawEmojiIcon("\uD83D\uDD25", cx, cy, medalR * 0.85f) // 🔥
+        "Litri Totali"   -> drawEmojiIcon("\uD83C\uDF0A", cx, cy, medalR * 0.85f) // 🌊
+        "Giorni Attivi"  -> drawEmojiIcon("\u2600\uFE0F", cx, cy, medalR * 0.85f) // ☀️
+        "Livelli"        -> drawEmojiIcon("\u2B50",        cx, cy, medalR * 0.85f) // ⭐
+        "Sfide e Record" -> drawEmojiIcon("\u26A1",        cx, cy, medalR * 0.85f) // ⚡
+        else             -> drawStar(cx, cy, medalR * 0.42f, 5)
     }
+
+    if (locked) nativeCanvas.restore()
 }
 
 // Goccia d'acqua
@@ -270,3 +278,18 @@ private fun DrawScope.drawDoubleStar(cx: Float, cy: Float, r: Float) {
     drawStar(cx, cy, r * 1.05f, 6)
     drawStar(cx, cy, r * 0.55f, 6)
 }
+
+// Emoji centrata dentro la medaglia via nativeCanvas
+private fun DrawScope.drawEmojiIcon(emoji: String, cx: Float, cy: Float, textSize: Float) {
+    val paint = android.graphics.Paint().apply {
+        this.textSize = textSize
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    // Offset verticale: drawText disegna dalla baseline, non dal centro
+    val textBounds = android.graphics.Rect()
+    paint.getTextBounds(emoji, 0, emoji.length, textBounds)
+    val verticalOffset = textBounds.height() / 2f - textBounds.bottom
+    drawContext.canvas.nativeCanvas.drawText(emoji, cx, cy + verticalOffset, paint)
+}
+

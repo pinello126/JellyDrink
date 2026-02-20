@@ -445,7 +445,7 @@ private fun StatisticsSection(
                 icon = Icons.Default.Star,
                 iconColor = Color(0xFFFFD700),
                 title = "Record Giornaliero",
-                value = "${dailyRecord}ml"
+                value = formatLiters(dailyRecord)
             )
         }
     }

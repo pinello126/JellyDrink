@@ -204,11 +204,11 @@ private fun CategoryHeader(
 }
 
 private fun categoryIcon(category: String): String = when (category) {
-    WaterRepository.CAT_PRIMI_PASSI -> "\uD83D\uDC23" // hatching chick
-    WaterRepository.CAT_STREAK -> "\uD83D\uDD25"      // fire
-    WaterRepository.CAT_LITRI -> "\uD83D\uDCA7"       // droplet
-    WaterRepository.CAT_GIORNI -> "\uD83D\uDCC5"       // calendar
-    WaterRepository.CAT_LIVELLI -> "\u2B50"            // star
-    WaterRepository.CAT_SFIDE -> "\uD83C\uDFC6"       // trophy
-    else -> "\uD83C\uDFC5"                              // medal
+    WaterRepository.CAT_PRIMI_PASSI -> "\uD83D\uDC23" // 🐣
+    WaterRepository.CAT_STREAK      -> "\uD83D\uDD25" // 🔥
+    WaterRepository.CAT_LITRI       -> "\uD83C\uDF0A" // 🌊
+    WaterRepository.CAT_GIORNI      -> "\u2600\uFE0F" // ☀️
+    WaterRepository.CAT_LIVELLI     -> "\u2B50"       // ⭐
+    WaterRepository.CAT_SFIDE       -> "\u26A1"       // ⚡
+    else -> "\uD83C\uDFC5"
 }
