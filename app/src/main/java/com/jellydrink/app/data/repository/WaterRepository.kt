@@ -73,20 +73,10 @@ class WaterRepository @Inject constructor(
         // Challenge types
         val CHALLENGE_TYPES = listOf(
             ChallengeType("early_bird", "Bevi prima delle 9:00", 1, 30),
-            ChallengeType("consistent", "Registra 5 assunzioni oggi", 5, 30),
-            ChallengeType("big_gulp", "Bevi 500ml in una volta", 500, 35),
-            ChallengeType("afternoon_goal", "Raggiungi l'obiettivo entro le 15:00", 1, 40),
+            ChallengeType("consistent", "Bevi almeno 5 volte oggi", 5, 30),
+            ChallengeType("big_gulp", "Bevi 0,5L in una volta", 500, 35),
+            ChallengeType("afternoon_goal", "Raggiungi l'obiettivo entro le 21:00", 1, 40),
             ChallengeType("full_tank", "Bevi il 120% dell'obiettivo", 120, 50)
-        )
-
-        // Jellyfish species
-        val JELLYFISH_SPECIES = listOf(
-            JellyfishSpecies("rosa", "Rosa Classica", "Default", 0),
-            JellyfishSpecies("lunar", "Medusa Lunare", "Streak 30 giorni o 500 XP", 500),
-            JellyfishSpecies("abyssal", "Medusa Abissale", "100L totali o 800 XP", 800),
-            JellyfishSpecies("aurora", "Medusa Aurora", "Livello 10 o 600 XP", 600),
-            JellyfishSpecies("crystal", "Medusa Cristallo", "30 sfide o 1000 XP", 1000),
-            JellyfishSpecies("golden", "Medusa Dorata", "Livello 20 o 1500 XP", 1500)
         )
 
         // Decorations
@@ -143,7 +133,6 @@ class WaterRepository @Inject constructor(
     }
 
     data class ChallengeType(val id: String, val description: String, val target: Int, val xpReward: Int)
-    data class JellyfishSpecies(val id: String, val nameIt: String, val unlockCondition: String, val cost: Int)
     data class DecorationInfo(val id: String, val nameIt: String, val cost: Int)
     data class BadgeDefinition(
         val type: String,
@@ -185,20 +174,17 @@ class WaterRepository @Inject constructor(
 
     private suspend fun initJellyfishCollection() {
         if (jellyfishDao.getCount() == 0) {
-            val today = today()
-            JELLYFISH_SPECIES.forEachIndexed { index, species ->
-                jellyfishDao.insert(
-                    JellyfishEntity(
-                        id = species.id,
-                        nameIt = species.nameIt,
-                        unlocked = index == 0, // Rosa is unlocked by default
-                        selected = index == 0, // Rosa is selected by default
-                        unlockCondition = species.unlockCondition,
-                        dateUnlocked = if (index == 0) today else null,
-                        cost = species.cost
-                    )
+            jellyfishDao.insert(
+                JellyfishEntity(
+                    id = "rosa",
+                    nameIt = "Rosa Classica",
+                    unlocked = true,
+                    selected = true,
+                    unlockCondition = "Default",
+                    dateUnlocked = today(),
+                    cost = 0
                 )
-            }
+            )
         }
     }
 
@@ -281,9 +267,6 @@ class WaterRepository @Inject constructor(
 
         // Update daily challenge progress
         updateChallengeProgress(amountMl, currentTotal, goal)
-
-        // Check for jellyfish unlocks
-        checkJellyfishUnlocks(newLevel, newBestStreak, profile.totalMlAllTime + amountMl)
 
         // Update widget
         JellyfishWidget.updateAllWidgets(context)
@@ -563,68 +546,11 @@ class WaterRepository @Inject constructor(
 
     // --- Jellyfish Collection ---
 
-    fun getAllJellyfish(): Flow<List<JellyfishEntity>> = jellyfishDao.getAllJellyfish()
-
     fun getSelectedJellyfish(): Flow<JellyfishEntity?> = jellyfishDao.getSelectedJellyfish()
-
-    suspend fun selectJellyfish(id: String) {
-        val jellyfish = jellyfishDao.getJellyfishById(id) ?: return
-        if (!jellyfish.unlocked) return
-
-        jellyfishDao.deselectAll()
-        jellyfishDao.select(id)
-    }
-
-    private suspend fun checkJellyfishUnlocks(level: Int, bestStreak: Int, totalMl: Int) {
-        val today = today()
-        val completedChallenges = dailyChallengeDao.getCompletedChallengesCount()
-
-        // Lunar: Streak 30 giorni
-        if (bestStreak >= 30) {
-            val lunar = jellyfishDao.getJellyfishById("lunar")
-            if (lunar != null && !lunar.unlocked) {
-                jellyfishDao.unlock("lunar", today)
-            }
-        }
-
-        // Abyssal: 100L totali (100000ml)
-        if (totalMl >= 100000) {
-            val abyssal = jellyfishDao.getJellyfishById("abyssal")
-            if (abyssal != null && !abyssal.unlocked) {
-                jellyfishDao.unlock("abyssal", today)
-            }
-        }
-
-        // Aurora: Livello 10
-        if (level >= 10) {
-            val aurora = jellyfishDao.getJellyfishById("aurora")
-            if (aurora != null && !aurora.unlocked) {
-                jellyfishDao.unlock("aurora", today)
-            }
-        }
-
-        // Crystal: 30 sfide completate
-        if (completedChallenges >= 30) {
-            val crystal = jellyfishDao.getJellyfishById("crystal")
-            if (crystal != null && !crystal.unlocked) {
-                jellyfishDao.unlock("crystal", today)
-            }
-        }
-
-        // Golden: Livello 20
-        if (level >= 20) {
-            val golden = jellyfishDao.getJellyfishById("golden")
-            if (golden != null && !golden.unlocked) {
-                jellyfishDao.unlock("golden", today)
-            }
-        }
-    }
 
     // --- Decorations ---
 
     fun getAllDecorations(): Flow<List<DecorationEntity>> = decorationDao.getAllDecorations()
-
-    fun getOwnedDecorations(): Flow<List<DecorationEntity>> = decorationDao.getOwnedDecorations()
 
     fun getPlacedDecorations(): Flow<List<DecorationEntity>> = decorationDao.getPlacedDecorations()
 
@@ -646,20 +572,6 @@ class WaterRepository @Inject constructor(
         if (!decoration.owned) return
 
         decorationDao.setPlaced(id, !decoration.placed)
-    }
-
-    suspend fun purchaseJellyfish(id: String): Boolean {
-        val jellyfish = jellyfishDao.getJellyfishById(id) ?: return false
-        if (jellyfish.unlocked) return false
-
-        val profile = userProfileDao.getProfileSync() ?: return false
-        if (profile.spendableXp < jellyfish.cost) return false  // Controlla XP spendibili
-
-        // Deduct XP spendibili and unlock jellyfish
-        val today = today()
-        userProfileDao.upsert(profile.copy(spendableXp = profile.spendableXp - jellyfish.cost))
-        jellyfishDao.unlock(id, today)
-        return true
     }
 
     // --- Reset ---

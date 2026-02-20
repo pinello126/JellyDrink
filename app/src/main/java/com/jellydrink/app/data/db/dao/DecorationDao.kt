@@ -12,9 +12,6 @@ interface DecorationDao {
     @Query("SELECT * FROM decorations")
     fun getAllDecorations(): Flow<List<DecorationEntity>>
 
-    @Query("SELECT * FROM decorations WHERE owned = 1")
-    fun getOwnedDecorations(): Flow<List<DecorationEntity>>
-
     @Query("SELECT * FROM decorations WHERE placed = 1")
     fun getPlacedDecorations(): Flow<List<DecorationEntity>>
 

@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,7 +63,6 @@ import com.jellydrink.app.ui.components.AquariumBackground
 import com.jellydrink.app.ui.components.BadgeMedalCanvas
 import com.jellydrink.app.ui.components.ChallengeCard
 import com.jellydrink.app.ui.components.JellyFishView
-import com.jellydrink.app.ui.components.WaterGlassSelector
 import com.jellydrink.app.ui.components.WaterProgressBar
 import com.jellydrink.app.ui.components.XpBar
 import com.jellydrink.app.data.repository.WaterRepository
