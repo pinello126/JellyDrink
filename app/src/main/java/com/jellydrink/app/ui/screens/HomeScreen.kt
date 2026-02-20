@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -59,11 +61,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jellydrink.app.ui.components.AquariumBackground
+import com.jellydrink.app.ui.components.BadgeMedalCanvas
 import com.jellydrink.app.ui.components.ChallengeCard
 import com.jellydrink.app.ui.components.JellyFishView
 import com.jellydrink.app.ui.components.WaterGlassSelector
 import com.jellydrink.app.ui.components.WaterProgressBar
 import com.jellydrink.app.ui.components.XpBar
+import com.jellydrink.app.data.repository.WaterRepository
 import com.jellydrink.app.ui.theme.GoldBadge
 import com.jellydrink.app.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
@@ -317,58 +321,125 @@ fun HomeScreen(
             )
         }
 
-        // Popup nuovo badge
+        // Popup nuovo badge — Dark Premium
         AnimatedVisibility(
             visible = newBadge != null,
-            enter = scaleIn() + fadeIn(),
-            exit = scaleOut() + fadeOut(),
+            enter = scaleIn(initialScale = 0.85f) + fadeIn(),
+            exit = scaleOut(targetScale = 0.85f) + fadeOut(),
             modifier = Modifier.align(Alignment.Center)
         ) {
             newBadge?.let { badge ->
-                Card(
-                    modifier = Modifier.padding(32.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(32.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = "Badge",
-                            tint = GoldBadge,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Nuovo Badge!",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = badge.description,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        TextButton(onClick = { viewModel.dismissBadge() }) {
-                            Text("Fantastico!")
-                        }
-                    }
-                }
+                val definition = WaterRepository.ALL_BADGES.find { it.type == badge.type }
+                BadgePopupCard(
+                    category = definition?.category ?: "",
+                    name = definition?.name ?: badge.description,
+                    description = badge.description,
+                    onDismiss = { viewModel.dismissBadge() }
+                )
             }
         }
     }
 }
+
+@Composable
+private fun BadgePopupCard(
+    category: String,
+    name: String,
+    description: String,
+    onDismiss: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 28.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A2E)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Header dorato
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFF8B6914),
+                                Color(0xFFFFD700),
+                                Color(0xFFFFB800),
+                                Color(0xFF8B6914)
+                            )
+                        ),
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                    )
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "✦  BADGE SBLOCCATO  ✦",
+                    color = Color(0xFF1A1A2E),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.5.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            BadgeMedalCanvas(
+                category = category,
+                modifier = Modifier.size(96.dp)
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = name,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 28.dp)
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFD700),
+                    contentColor = Color(0xFF1A1A2E)
+                ),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text(
+                    text = "Stai volando!",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
 
 // ═══════════════════════════════════════════════════════════════
 //  ICONE ACQUA — Canvas-drawn, stile moderno

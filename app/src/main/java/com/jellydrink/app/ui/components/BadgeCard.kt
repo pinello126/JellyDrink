@@ -46,6 +46,17 @@ private val AzzurroMid  = Color(0xFF64B5F6)
 private val AzzurroDark = Color(0xFF1565C0)
 private val AzzurroDeep = Color(0xFF0D47A1)
 
+// Composable riutilizzabile che disegna solo la medaglia (usato anche nel popup HomeScreen)
+@Composable
+internal fun BadgeMedalCanvas(
+    category: String,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        drawMedal(category, locked = false)
+    }
+}
+
 @Composable
 fun BadgeCard(
     badge: WaterRepository.BadgeWithStatus,
