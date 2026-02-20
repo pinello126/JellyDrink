@@ -3,7 +3,6 @@ package com.jellydrink.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jellydrink.app.data.db.entity.DecorationEntity
-import com.jellydrink.app.data.db.entity.JellyfishEntity
 import com.jellydrink.app.data.db.entity.UserProfileEntity
 import com.jellydrink.app.data.repository.WaterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,10 +17,9 @@ import javax.inject.Inject
 
 data class ShopUiState(
     val profile: UserProfileEntity? = null,
-    val decorations: List<DecorationEntity> = emptyList(),
-    val jellyfish: List<JellyfishEntity> = emptyList()
+    val decorations: List<DecorationEntity> = emptyList()
 ) {
-    val currentXp: Int get() = profile?.spendableXp ?: 0  // Mostra XP spendibili
+    val currentXp: Int get() = profile?.spendableXp ?: 0
 }
 
 @HiltViewModel
@@ -34,13 +32,11 @@ class ShopViewModel @Inject constructor(
 
     val uiState: StateFlow<ShopUiState> = combine(
         repository.getProfile(),
-        repository.getAllDecorations(),
-        repository.getAllJellyfish()
-    ) { profile, decorations, jellyfish ->
+        repository.getAllDecorations()
+    ) { profile, decorations ->
         ShopUiState(
             profile = profile,
-            decorations = decorations,
-            jellyfish = jellyfish
+            decorations = decorations
         )
     }.stateIn(
         scope = viewModelScope,
@@ -62,23 +58,6 @@ class ShopViewModel @Inject constructor(
     fun toggleDecorationPlaced(id: String) {
         viewModelScope.launch {
             repository.toggleDecorationPlaced(id)
-        }
-    }
-
-    fun purchaseJellyfish(id: String) {
-        viewModelScope.launch {
-            val success = repository.purchaseJellyfish(id)
-            _purchaseResult.value = if (success) {
-                PurchaseResult.Success
-            } else {
-                PurchaseResult.InsufficientXp
-            }
-        }
-    }
-
-    fun selectJellyfish(id: String) {
-        viewModelScope.launch {
-            repository.selectJellyfish(id)
         }
     }
 

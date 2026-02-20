@@ -263,33 +263,6 @@ private fun DrawScope.drawStar(cx: Float, cy: Float, r: Float, points: Int) {
     drawPath(path, GoldDeep.copy(alpha = 0.35f), style = Stroke(0.8f))
 }
 
-// Fiamma
-private fun DrawScope.drawFlame(cx: Float, cy: Float, r: Float) {
-    val flame = Path().apply {
-        moveTo(cx, cy - r * 1.1f)
-        cubicTo(cx + r * 0.6f, cy - r * 0.4f, cx + r * 0.7f, cy + r * 0.2f, cx + r * 0.3f, cy + r * 0.7f)
-        cubicTo(cx + r * 0.15f, cy + r * 0.9f, cx - r * 0.15f, cy + r * 0.9f, cx - r * 0.3f, cy + r * 0.7f)
-        cubicTo(cx - r * 0.7f, cy + r * 0.2f, cx - r * 0.6f, cy - r * 0.4f, cx, cy - r * 1.1f)
-        close()
-    }
-    drawPath(flame, Color(0xFFFF6830))
-    // Nucleo interno
-    val inner = Path().apply {
-        moveTo(cx, cy - r * 0.3f)
-        cubicTo(cx + r * 0.25f, cy, cx + r * 0.2f, cy + r * 0.4f, cx, cy + r * 0.55f)
-        cubicTo(cx - r * 0.2f, cy + r * 0.4f, cx - r * 0.25f, cy, cx, cy - r * 0.3f)
-        close()
-    }
-    drawPath(inner, Color(0xFFFFD040))
-    drawPath(flame, GoldDeep.copy(alpha = 0.3f), style = Stroke(0.8f))
-}
-
-// Doppia stella
-private fun DrawScope.drawDoubleStar(cx: Float, cy: Float, r: Float) {
-    drawStar(cx, cy, r * 1.05f, 6)
-    drawStar(cx, cy, r * 0.55f, 6)
-}
-
 // Emoji centrata dentro la medaglia via nativeCanvas
 private fun DrawScope.drawEmojiIcon(emoji: String, cx: Float, cy: Float, textSize: Float) {
     val paint = android.graphics.Paint().apply {
