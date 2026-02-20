@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.jellydrink.app.data.repository.dataStore
 import com.jellydrink.app.data.db.AppDatabase
 import com.jellydrink.app.notification.WaterNotificationHelper
 import kotlinx.coroutines.CoroutineScope
@@ -13,8 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-
-private val Context.dataStore by preferencesDataStore(name = "settings")
 
 /**
  * Ricevitore che mostra la notifica lock screen al boot del dispositivo

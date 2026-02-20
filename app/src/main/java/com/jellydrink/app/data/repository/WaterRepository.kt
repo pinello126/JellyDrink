@@ -36,7 +36,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.sqrt
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+internal val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @Singleton
 class WaterRepository @Inject constructor(
