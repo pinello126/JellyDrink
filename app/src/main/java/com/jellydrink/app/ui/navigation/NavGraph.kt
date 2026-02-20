@@ -2,14 +2,14 @@ package com.jellydrink.app.ui.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -25,10 +25,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jellydrink.app.ui.screens.BadgesScreen
 import com.jellydrink.app.ui.screens.HistoryScreen
 import com.jellydrink.app.ui.screens.HomeScreen
-import com.jellydrink.app.ui.screens.ProfileScreen
-import com.jellydrink.app.ui.screens.SettingsScreen
+import com.jellydrink.app.ui.screens.ProfileSettingsScreen
 import com.jellydrink.app.ui.screens.ShopScreen
 
 sealed class Screen(
@@ -40,7 +40,7 @@ sealed class Screen(
     data object Home : Screen("home", "Home", Icons.Filled.Home, Icons.Outlined.Home)
     data object Profile : Screen("profile", "Profilo", Icons.Filled.Person, Icons.Outlined.Person)
     data object History : Screen("history", "Storico", Icons.Filled.History, Icons.Outlined.History)
-    data object Settings : Screen("settings", "Impostazioni", Icons.Filled.Settings, Icons.Outlined.Settings)
+    data object Badges : Screen("badges", "Badge", Icons.Filled.EmojiEvents, Icons.Outlined.EmojiEvents)
 }
 
 // Additional routes (not in bottom nav)
@@ -48,7 +48,7 @@ object Routes {
     const val SHOP = "shop"
 }
 
-val screens = listOf(Screen.Home, Screen.Profile, Screen.History, Screen.Settings)
+val screens = listOf(Screen.Home, Screen.Profile, Screen.History, Screen.Badges)
 
 @Composable
 fun JellyDrinkNavGraph() {
@@ -105,9 +105,9 @@ fun JellyDrinkNavGraph() {
                     }
                 )
             }
-            composable(Screen.Profile.route) { ProfileScreen() }
+            composable(Screen.Profile.route) { ProfileSettingsScreen() }
             composable(Screen.History.route) { HistoryScreen() }
-            composable(Screen.Settings.route) { SettingsScreen() }
+            composable(Screen.Badges.route) { BadgesScreen() }
             composable(Routes.SHOP) {
                 ShopScreen(
                     onNavigateBack = {

@@ -56,6 +56,16 @@ class WaterRepository @Inject constructor(
         const val DEFAULT_GOAL = 2000
         val DEFAULT_GLASSES = listOf(200, 500, 1000)
 
+        // Badge categories
+        const val CAT_PRIMI_PASSI = "Primi Passi"
+        const val CAT_STREAK = "Streak"
+        const val CAT_LITRI = "Litri Totali"
+        const val CAT_GIORNI = "Giorni Attivi"
+        const val CAT_LIVELLI = "Livelli"
+        const val CAT_SFIDE = "Sfide e Record"
+
+        val BADGE_CATEGORIES_ORDER = listOf(CAT_PRIMI_PASSI, CAT_STREAK, CAT_LITRI, CAT_GIORNI, CAT_LIVELLI, CAT_SFIDE)
+
         // XP Configuration
         const val XP_PER_100ML = 1
         const val XP_GOAL_BONUS = 50
@@ -100,49 +110,48 @@ class WaterRepository @Inject constructor(
         val name: String,
         val description: String,
         val icon: String,
-        val order: Int
+        val order: Int,
+        val category: String
     )
 
     // All possible badges
     val ALL_BADGES = listOf(
         // Primi passi
-        BadgeDefinition("first_sip", "Primo Sorso", "Hai registrato il tuo primo consumo d'acqua", "💧", 1),
-        BadgeDefinition("daily_goal", "Obiettivo Raggiunto", "Hai completato il tuo obiettivo giornaliero", "🎯", 2),
+        BadgeDefinition("first_sip", "Primo Sorso", "Hai registrato il tuo primo consumo d'acqua", "💧", 1, CAT_PRIMI_PASSI),
+        BadgeDefinition("daily_goal", "Obiettivo Raggiunto", "Hai completato il tuo obiettivo giornaliero", "🎯", 2, CAT_PRIMI_PASSI),
 
         // Streak
-        BadgeDefinition("streak_3", "Streak 3", "Tre giorni consecutivi al 100%", "🔥", 3),
-        BadgeDefinition("streak_7", "Streak 7", "Una settimana intera al 100%", "🔥", 4),
-        BadgeDefinition("streak_14", "Streak 14", "Due settimane consecutive al 100%", "🔥", 5),
-        BadgeDefinition("streak_30", "Streak 30", "Un mese intero al 100%", "🔥", 6),
-        BadgeDefinition("streak_100", "Streak 100", "Cento giorni consecutivi al 100%! Leggendario!", "🔥", 7),
+        BadgeDefinition("streak_3", "Streak 3", "Tre giorni consecutivi al 100%", "🔥", 3, CAT_STREAK),
+        BadgeDefinition("streak_7", "Streak 7", "Una settimana intera al 100%", "🔥", 4, CAT_STREAK),
+        BadgeDefinition("streak_14", "Streak 14", "Due settimane consecutive al 100%", "🔥", 5, CAT_STREAK),
+        BadgeDefinition("streak_30", "Streak 30", "Un mese intero al 100%", "🔥", 6, CAT_STREAK),
+        BadgeDefinition("streak_100", "Streak 100", "Cento giorni consecutivi al 100%! Leggendario!", "🔥", 7, CAT_STREAK),
 
         // Litri totali
-        BadgeDefinition("liters_10", "10 Litri", "Hai bevuto 10 litri d'acqua in totale", "💦", 8),
-        BadgeDefinition("liters_50", "50 Litri", "Hai bevuto 50 litri d'acqua in totale", "💦", 9),
-        BadgeDefinition("liters_100", "100 Litri", "Hai bevuto 100 litri d'acqua in totale", "💦", 10),
-        BadgeDefinition("liters_500", "500 Litri", "Hai bevuto 500 litri d'acqua in totale", "💦", 11),
-        BadgeDefinition("liters_1000", "1000 Litri", "Hai bevuto 1000 litri d'acqua! Incredibile!", "💦", 12),
+        BadgeDefinition("liters_10", "10 Litri", "Hai bevuto 10 litri d'acqua in totale", "💦", 8, CAT_LITRI),
+        BadgeDefinition("liters_50", "50 Litri", "Hai bevuto 50 litri d'acqua in totale", "💦", 9, CAT_LITRI),
+        BadgeDefinition("liters_100", "100 Litri", "Hai bevuto 100 litri d'acqua in totale", "💦", 10, CAT_LITRI),
+        BadgeDefinition("liters_500", "500 Litri", "Hai bevuto 500 litri d'acqua in totale", "💦", 11, CAT_LITRI),
+        BadgeDefinition("liters_1000", "1000 Litri", "Hai bevuto 1000 litri d'acqua! Incredibile!", "💦", 12, CAT_LITRI),
 
         // Giorni attivi
-        BadgeDefinition("active_7", "7 Giorni Attivi", "Hai registrato acqua per 7 giorni", "📅", 13),
-        BadgeDefinition("active_30", "30 Giorni Attivi", "Hai registrato acqua per 30 giorni", "📅", 14),
-        BadgeDefinition("active_100", "100 Giorni Attivi", "Hai registrato acqua per 100 giorni", "📅", 15),
-        BadgeDefinition("active_365", "1 Anno Attivo", "Hai registrato acqua per 365 giorni!", "📅", 16),
+        BadgeDefinition("active_7", "7 Giorni Attivi", "Hai registrato acqua per 7 giorni", "📅", 13, CAT_GIORNI),
+        BadgeDefinition("active_30", "30 Giorni Attivi", "Hai registrato acqua per 30 giorni", "📅", 14, CAT_GIORNI),
+        BadgeDefinition("active_100", "100 Giorni Attivi", "Hai registrato acqua per 100 giorni", "📅", 15, CAT_GIORNI),
+        BadgeDefinition("active_365", "1 Anno Attivo", "Hai registrato acqua per 365 giorni!", "📅", 16, CAT_GIORNI),
 
         // Livelli
-        BadgeDefinition("level_5", "Livello 5", "Hai raggiunto il livello 5", "⭐", 17),
-        BadgeDefinition("level_10", "Livello 10", "Hai raggiunto il livello 10", "⭐", 18),
-        BadgeDefinition("level_20", "Livello 20", "Hai raggiunto il livello 20", "⭐", 19),
-        BadgeDefinition("level_50", "Livello 50", "Hai raggiunto il livello 50!", "⭐", 20),
+        BadgeDefinition("level_5", "Livello 5", "Hai raggiunto il livello 5", "⭐", 17, CAT_LIVELLI),
+        BadgeDefinition("level_10", "Livello 10", "Hai raggiunto il livello 10", "⭐", 18, CAT_LIVELLI),
+        BadgeDefinition("level_20", "Livello 20", "Hai raggiunto il livello 20", "⭐", 19, CAT_LIVELLI),
+        BadgeDefinition("level_50", "Livello 50", "Hai raggiunto il livello 50!", "⭐", 20, CAT_LIVELLI),
 
-        // Sfide
-        BadgeDefinition("challenges_10", "10 Sfide", "Hai completato 10 sfide giornaliere", "🏆", 21),
-        BadgeDefinition("challenges_50", "50 Sfide", "Hai completato 50 sfide giornaliere", "🏆", 22),
-        BadgeDefinition("challenges_100", "100 Sfide", "Hai completato 100 sfide giornaliere", "🏆", 23),
-
-        // Record
-        BadgeDefinition("record_3000", "Record 3L", "Hai bevuto 3L in un solo giorno", "🥇", 24),
-        BadgeDefinition("record_5000", "Record 5L", "Hai bevuto 5L in un solo giorno!", "🥇", 25)
+        // Sfide e Record
+        BadgeDefinition("challenges_10", "10 Sfide", "Hai completato 10 sfide giornaliere", "🏆", 21, CAT_SFIDE),
+        BadgeDefinition("challenges_50", "50 Sfide", "Hai completato 50 sfide giornaliere", "🏆", 22, CAT_SFIDE),
+        BadgeDefinition("challenges_100", "100 Sfide", "Hai completato 100 sfide giornaliere", "🏆", 23, CAT_SFIDE),
+        BadgeDefinition("record_3000", "Record 3L", "Hai bevuto 3L in un solo giorno", "🥇", 24, CAT_SFIDE),
+        BadgeDefinition("record_5000", "Record 5L", "Hai bevuto 5L in un solo giorno!", "🥇", 25, CAT_SFIDE)
     )
 
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -471,6 +480,7 @@ class WaterRepository @Inject constructor(
                 description = definition.description,
                 icon = definition.icon,
                 order = definition.order,
+                category = definition.category,
                 isEarned = earned != null,
                 dateEarned = earned?.dateEarned
             )
@@ -483,6 +493,7 @@ class WaterRepository @Inject constructor(
         val description: String,
         val icon: String,
         val order: Int,
+        val category: String,
         val isEarned: Boolean,
         val dateEarned: String?
     )

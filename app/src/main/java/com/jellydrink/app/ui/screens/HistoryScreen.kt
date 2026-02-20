@@ -43,6 +43,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+private fun formatLiters(ml: Int): String = when {
+    ml % 1000 == 0 -> "${ml / 1000}L"
+    ml % 100 == 0  -> "%.1fL".format(ml / 1000f)
+    else           -> "%.2fL".format(ml / 1000f)
+}
+
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel()
@@ -177,7 +183,7 @@ private fun DaySummaryCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${summary.totalMl} / $goalMl ml",
+                    text = "${formatLiters(summary.totalMl)} / ${formatLiters(goalMl)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

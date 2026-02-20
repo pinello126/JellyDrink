@@ -23,6 +23,9 @@ class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+            // Schedula alarm per reset a mezzanotte
+            MidnightResetReceiver.scheduleMidnightAlarm(context.applicationContext)
+
             // Mostra la notifica lock screen con i dati correnti
             val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
             scope.launch {
