@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import com.jellydrink.app.data.repository.dataStore
 import com.jellydrink.app.notification.WaterNotificationHelper
 import com.jellydrink.app.widget.JellyfishWidget
 import kotlinx.coroutines.CoroutineScope
@@ -15,8 +15,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Calendar
-
-private val Context.dataStore by preferencesDataStore(name = "settings")
 
 /**
  * Ricevitore che resetta la notifica lock screen a mezzanotte.
