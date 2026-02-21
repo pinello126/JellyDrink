@@ -72,8 +72,8 @@ class MidnightResetReceiver : BroadcastReceiver() {
                 add(Calendar.DAY_OF_MONTH, 1)
             }
 
-            // setAndAllowWhileIdle funziona anche in Doze mode
-            alarmManager.setAndAllowWhileIdle(
+            // setExactAndAllowWhileIdle garantisce timing preciso anche in Doze mode
+            alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 midnight.timeInMillis,
                 pendingIntent
