@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.datastore.preferences.core.intPreferencesKey
 import com.jellydrink.app.data.repository.dataStore
 import com.jellydrink.app.notification.WaterNotificationHelper
@@ -72,12 +73,21 @@ class MidnightResetReceiver : BroadcastReceiver() {
                 add(Calendar.DAY_OF_MONTH, 1)
             }
 
-            // setExactAndAllowWhileIdle garantisce timing preciso anche in Doze mode
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                midnight.timeInMillis,
-                pendingIntent
-            )
+            // Su Android 12+ setExactAndAllowWhileIdle richiede il permesso SCHEDULE_EXACT_ALARM
+            // che l'utente deve concedere esplicitamente. Se non disponibile, fallback a inesatto.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    midnight.timeInMillis,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    midnight.timeInMillis,
+                    pendingIntent
+                )
+            }
         }
     }
 }

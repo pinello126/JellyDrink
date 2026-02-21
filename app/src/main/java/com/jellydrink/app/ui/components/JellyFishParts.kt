@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin// ═══════════════════════════════════════════════════════════════════
 //  PATH CAMPANA con bordo smerlato organico

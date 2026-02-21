@@ -30,8 +30,6 @@ data class HomeUiState(
     val level: Int = 1,
     val xpForCurrentLevel: Int = 0,
     val xpForNextLevel: Int = 100,
-    // Jellyfish
-    val selectedJellyfishSpecies: String = "rosa",
     // Challenge
     val todayChallenge: DailyChallengeEntity? = null,
     // Decorations
@@ -56,7 +54,6 @@ class HomeViewModel @Inject constructor(
         repository.getAllBadges(),
         repository.getProfile(),
         repository.getTodayChallenge(),
-        repository.getSelectedJellyfish(),
         repository.getPlacedDecorations()
     ) { values ->
         val currentMl = values[0] as Int
@@ -65,8 +62,7 @@ class HomeViewModel @Inject constructor(
         val badges = values[3] as List<BadgeEntity>
         val profile = values[4] as? UserProfileEntity
         val challenge = values[5] as? DailyChallengeEntity
-        val selectedJellyfish = values[6] as? com.jellydrink.app.data.db.entity.JellyfishEntity
-        val placedDecorations = values[7] as List<DecorationEntity>
+        val placedDecorations = values[6] as List<DecorationEntity>
 
         HomeUiState(
             currentMl = currentMl,
@@ -77,7 +73,6 @@ class HomeViewModel @Inject constructor(
             level = profile?.level ?: 1,
             xpForCurrentLevel = repository.xpForLevel(profile?.level ?: 1),
             xpForNextLevel = repository.xpForNextLevel(profile?.xp ?: 0),
-            selectedJellyfishSpecies = selectedJellyfish?.id ?: "rosa",
             todayChallenge = challenge,
             placedDecorations = placedDecorations
         )

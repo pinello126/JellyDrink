@@ -199,7 +199,6 @@ fun HomeScreen(
                 // Medusa — occupa tutto lo spazio disponibile
                 JellyFishView(
                     fillPercentage = uiState.percentage,
-                    species = uiState.selectedJellyfishSpecies,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize()
