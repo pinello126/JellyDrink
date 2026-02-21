@@ -972,6 +972,12 @@ Lo Shop non ha la bottom navigation bar: viene navigato da `navController.naviga
 | Contenuto | Percentuale + litri attuali / goal |
 | Click | `PendingIntent` → apre `MainActivity` |
 
+**Dark mode:** i `RemoteViews` non adattano i colori automaticamente. Gestito con resource qualifier:
+- `res/layout/notification_water_progress.xml` — light mode (testo nero/grigio scuro)
+- `res/layout-night/notification_water_progress.xml` — dark mode (testo bianco/grigio chiaro)
+- `res/drawable/widget_jellyfish_outline.xml` — icona medusa light mode (tratti `#6B6B6B`)
+- `res/drawable-night/widget_jellyfish_outline.xml` — icona medusa dark mode (tratti `#E0E0E0`)
+
 **Metodi statici:**
 - `fun createNotificationChannel(context)` — chiamato in `JellyDrinkApp.onCreate()`
 - `fun showWaterProgressNotification(context, currentMl, goalMl)` — aggiorna o crea la notifica
@@ -997,6 +1003,11 @@ Widget home screen che mostra la percentuale dell'obiettivo giornaliero.
 3. `updateWidgetView()` — aggiorna effettivamente le `RemoteViews`
    - `widget_percentage`: testo percentuale
    - `widget_container`: click → apre MainActivity
+
+**Dark mode:** gestito con resource qualifier:
+- `res/drawable/widget_background.xml` — sfondo azzurro chiaro (light mode)
+- `res/drawable-night/widget_background.xml` — sfondo blu navy scuro (dark mode)
+- `res/drawable-night/widget_jellyfish_outline.xml` — tratti bianchi/chiari per contrasto sul fondo scuro
 
 > **Nota:** Il widget crea la propria connessione Room separata dall'app principale. Deve sempre includere **tutte** le migrazioni aggiornate.
 
