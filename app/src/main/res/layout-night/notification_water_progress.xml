@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical">
+
+    <!-- Icona Medusa -->
+    <ImageView
+        android:id="@+id/notification_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/widget_jellyfish_outline"
+        android:contentDescription="@string/jellyfish"
+        android:padding="4dp" />
+
+    <!-- Contenuto testo -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/notification_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Obiettivo Idratazione"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/notification_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1500 / 2000 ml"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:layout_marginTop="2dp" />
+
+    </LinearLayout>
+
+    <!-- Percentuale grande -->
+    <TextView
+        android:id="@+id/notification_percentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="75%"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="#00CED1"
+        android:layout_marginStart="8dp" />
+
+</LinearLayout>
