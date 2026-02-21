@@ -23,11 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
-import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
@@ -35,10 +32,9 @@ import kotlin.math.sin
 @Composable
 fun JellyFishView(
     fillPercentage: Float,
-    modifier: Modifier = Modifier,
-    species: String = "rosa"
+    modifier: Modifier = Modifier
 ) {
-    val palette = getPalette(species)
+    val palette = PaletteRosa
     val fill by animateFloatAsState(
         targetValue = fillPercentage.coerceIn(0f, 1f),
         animationSpec = tween(durationMillis = 900),
@@ -87,29 +83,12 @@ fun JellyFishView(
 
     val wavePhase by inf.smoothPhase(2200, "wave")
 
-    // Pulsazione organo interno
-    val organPulse by inf.animateFloat(
-        initialValue = 0.92f, targetValue = 1.08f,
-        animationSpec = infiniteRepeatable(tween(2800), RepeatMode.Reverse), label = "organ"
-    )
     // Bollicine fase
     val bubblePhase by inf.animateFloat(
         initialValue = 0f, targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(4000, easing = LinearEasing), RepeatMode.Restart),
         label = "bub"
     )
-
-    // Punti bioluminescenti pre-generati (stabili tra recompositions)
-    val bioDots = remember {
-        List(14) { i ->
-            InternalDot(
-                angleF = (i * 0.45f + 0.2f) % (2f * PI.toFloat()),
-                radiusF = 0.25f + (i * 0.17f) % 0.45f,
-                size = 1.2f + (i % 4) * 0.6f,
-                phase = i * 0.9f
-            )
-        }
-    }
 
     // Bollicine pre-generate
     val bubbles = remember {
@@ -277,64 +256,6 @@ fun JellyFishView(
             )
         )
 
-        // ══════════════════════════════════════════
-        //  CANALI RADIALI interni (struttura organica)
-        // ══════════════════════════════════════════
-        clipPath(bodyPath) {
-            val channelCount = 10
-            for (i in 0 until channelCount) {
-                val angle = (i.toFloat() / channelCount) * PI.toFloat() + PI.toFloat() * 0.05f
-                val startR = bw * 0.15f * organPulse
-                val endR = bw * 0.85f
-                val startX = cx + cos(angle) * startR
-                val startYc = baseY - bh * 0.08f + sin(angle) * startR * 0.5f
-                val endX = cx + cos(angle) * endR
-                val endYc = baseY - bh * 0.08f + sin(angle) * endR * 0.7f
-                val ctrlSway = sin(tentPhaseA + i * 0.6f) * bw * 0.04f
-
-                val ch = Path().apply {
-                    moveTo(startX, startYc)
-                    quadraticTo(
-                        (startX + endX) / 2f + ctrlSway,
-                        (startYc + endYc) / 2f,
-                        endX, endYc
-                    )
-                }
-                drawPath(
-                    ch, ChannelColor,
-                    style = Stroke(1.8f + sin(tentPhaseB + i) * 0.3f, cap = StrokeCap.Round)
-                )
-            }
-
-            // Organo centrale pulsante (stomaco)
-            val organR = bw * 0.18f * organPulse
-            drawOval(
-                brush = Brush.radialGradient(
-                    colors = listOf(OrganCenter, OrganRing, OrganRing.copy(alpha = 0.15f)),
-                    center = Offset(cx, baseY - bh * 0.05f),
-                    radius = organR * 1.3f
-                ),
-                topLeft = Offset(cx - organR, baseY - bh * 0.05f - organR * 0.7f),
-                size = Size(organR * 2f, organR * 1.4f)
-            )
-            // Anello organo
-            drawOval(
-                color = OrganRing.copy(alpha = 0.35f),
-                topLeft = Offset(cx - organR, baseY - bh * 0.05f - organR * 0.7f),
-                size = Size(organR * 2f, organR * 1.4f),
-                style = Stroke(1.2f)
-            )
-
-            // Punti bioluminescenti
-            bioDots.take(bioDotsCount).forEach { dot ->
-                val dotR = bw * dot.radiusF
-                val dx = cx + cos(dot.angleF) * dotR
-                val dy = baseY - bh * 0.05f + sin(dot.angleF) * dotR * 0.7f
-                val alpha = (0.3f + sin(tentPhaseC + dot.phase) * 0.15f) * glowIntensity
-                drawCircle(BioDot.copy(alpha = alpha), dot.size, Offset(dx, dy))
-                drawCircle(BioDot.copy(alpha = alpha * 0.3f), dot.size * 2.5f, Offset(dx, dy))
-            }
-        }
 
         // ══════════════════════════════════════════
         //  MACCHIE ORGANICHE

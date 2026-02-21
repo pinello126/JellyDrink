@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "jellyfish_collection")
 data class JellyfishEntity(
-    @PrimaryKey val id: String,  // "rosa", "lunar", "abyssal", etc.
+    @PrimaryKey val id: String,  // "rosa"
     val nameIt: String,
     val unlocked: Boolean = false,
     val selected: Boolean = false,
