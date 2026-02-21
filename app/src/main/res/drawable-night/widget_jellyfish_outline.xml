@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Medusa semplice stilizzata (line art) — variante dark mode -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="80"
+    android:viewportHeight="80">
+
+    <!-- Corpo/Campana (outline) -->
+    <path
+        android:pathData="M40,15 Q30,15 25,20 Q20,25 20,35 Q20,45 25,50 L55,50 Q60,45 60,35 Q60,25 55,20 Q50,15 40,15 Z"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+
+    <!-- Occhio sinistro -->
+    <path
+        android:pathData="M32,30 C32,30 32,30 32,30 C33.1,30 34,30.9 34,32 C34,33.1 33.1,34 32,34 C30.9,34 30,33.1 30,32 C30,30.9 30.9,30 32,30 Z"
+        android:fillColor="#E0E0E0" />
+
+    <!-- Occhio destro -->
+    <path
+        android:pathData="M48,30 C48,30 48,30 48,30 C49.1,30 50,30.9 50,32 C50,33.1 49.1,34 48,34 C46.9,34 46,33.1 46,32 C46,30.9 46.9,30 48,30 Z"
+        android:fillColor="#E0E0E0" />
+
+    <!-- Guance (blush) -->
+    <path
+        android:pathData="M27,36 C28.1,36 29,36.9 29,38 C29,39.1 28.1,40 27,40 C25.9,40 25,39.1 25,38 C25,36.9 25.9,36 27,36 Z"
+        android:fillColor="#FFB0C0"
+        android:fillAlpha="0.6" />
+    <path
+        android:pathData="M53,36 C54.1,36 55,36.9 55,38 C55,39.1 54.1,40 53,40 C51.9,40 51,39.1 51,38 C51,36.9 51.9,36 53,36 Z"
+        android:fillColor="#FFB0C0"
+        android:fillAlpha="0.6" />
+
+    <!-- Bocca (sorriso) -->
+    <path
+        android:pathData="M35,40 Q40,43 45,40"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tentacolo 1 (sinistro - ondulato) -->
+    <path
+        android:pathData="M28,50 Q24,56 26,62 Q28,68 25,74 Q23,77 23,78"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tentacolo 2 (ondulato a sinistra) -->
+    <path
+        android:pathData="M33,50 Q31,56 33,62 Q35,68 33,74 Q32,76 32,78"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tentacolo 3 (centrale - leggermente ondulato) -->
+    <path
+        android:pathData="M40,50 Q38,56 40,62 Q42,68 40,74 Q40,76 40,78"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tentacolo 4 (ondulato a destra) -->
+    <path
+        android:pathData="M47,50 Q49,56 47,62 Q45,68 47,74 Q48,76 48,78"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tentacolo 5 (destro - ondulato) -->
+    <path
+        android:pathData="M52,50 Q56,56 54,62 Q52,68 55,74 Q57,77 57,78"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+</vector>
