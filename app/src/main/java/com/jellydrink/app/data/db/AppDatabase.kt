@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.jellydrink.app.data.db.dao.BadgeDao
+import com.jellydrink.app.data.db.dao.BeerIntakeDao
 import com.jellydrink.app.data.db.dao.DailyChallengeDao
 import com.jellydrink.app.data.db.dao.DecorationDao
 import com.jellydrink.app.data.db.dao.JellyfishDao
@@ -12,6 +13,7 @@ import com.jellydrink.app.data.db.dao.UserProfileDao
 import com.jellydrink.app.data.db.dao.DailyGoalDao
 import com.jellydrink.app.data.db.dao.WaterIntakeDao
 import com.jellydrink.app.data.db.entity.BadgeEntity
+import com.jellydrink.app.data.db.entity.BeerIntakeEntity
 import com.jellydrink.app.data.db.entity.DailyGoalEntity
 import com.jellydrink.app.data.db.entity.DailyChallengeEntity
 import com.jellydrink.app.data.db.entity.DecorationEntity
@@ -27,9 +29,10 @@ import com.jellydrink.app.data.db.entity.WaterIntakeEntity
         DailyChallengeEntity::class,
         JellyfishEntity::class,
         DecorationEntity::class,
-        DailyGoalEntity::class
+        DailyGoalEntity::class,
+        BeerIntakeEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -40,6 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun jellyfishDao(): JellyfishDao
     abstract fun decorationDao(): DecorationDao
     abstract fun dailyGoalDao(): DailyGoalDao
+    abstract fun beerIntakeDao(): BeerIntakeDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -147,6 +151,19 @@ abstract class AppDatabase : RoomDatabase() {
                     CREATE TABLE IF NOT EXISTS daily_goal (
                         date TEXT PRIMARY KEY NOT NULL,
                         goalMl INTEGER NOT NULL
+                    )
+                """.trimIndent())
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS beer_intake (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        date TEXT NOT NULL,
+                        amountCl INTEGER NOT NULL,
+                        timestamp INTEGER NOT NULL
                     )
                 """.trimIndent())
             }

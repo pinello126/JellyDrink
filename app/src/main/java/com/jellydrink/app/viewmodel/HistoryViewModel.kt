@@ -2,6 +2,7 @@ package com.jellydrink.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jellydrink.app.data.db.dao.BeerDailySummary
 import com.jellydrink.app.data.db.dao.DailySummary
 import com.jellydrink.app.data.repository.WaterRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +20,9 @@ data class HistoryUiState(
     val goalMl: Int = 2000,
     val goalPerDay: Map<String, Int> = emptyMap(),
     val weekSummaries: List<DailySummary> = emptyList(),
+    val beerDailySummaries: List<BeerDailySummary> = emptyList(),
+    val beerWeekSummaries: List<BeerDailySummary> = emptyList(),
+    val showBeer: Boolean = false,
     val isLoading: Boolean = true
 )
 
@@ -34,6 +38,10 @@ class HistoryViewModel @Inject constructor(
 
     init {
         loadHistory()
+    }
+
+    fun toggleMode() {
+        _uiState.value = _uiState.value.copy(showBeer = !_uiState.value.showBeer)
     }
 
     fun loadHistory() {
@@ -58,7 +66,7 @@ class HistoryViewModel @Inject constructor(
                 today.format(dateFormatter)
             )
 
-            // Riempi i giorni mancanti nella settimana
+            // Riempi i giorni mancanti nella settimana (acqua)
             val filledWeek = mutableListOf<DailySummary>()
             for (i in 0L..6L) {
                 val date = sevenDaysAgo.plusDays(i).format(dateFormatter)
@@ -66,11 +74,32 @@ class HistoryViewModel @Inject constructor(
                 filledWeek.add(existing ?: DailySummary(date, 0))
             }
 
+            val beerMonthlySummary = repository.getBeerDailySummary(
+                thirtyDaysAgo.format(dateFormatter),
+                today.format(dateFormatter)
+            )
+            val beerWeeklySummary = repository.getBeerDailySummary(
+                sevenDaysAgo.format(dateFormatter),
+                today.format(dateFormatter)
+            )
+
+            // Riempi i giorni mancanti nella settimana (birra)
+            val filledBeerWeek = mutableListOf<BeerDailySummary>()
+            for (i in 0L..6L) {
+                val date = sevenDaysAgo.plusDays(i).format(dateFormatter)
+                val existing = beerWeeklySummary.find { it.date == date }
+                filledBeerWeek.add(existing ?: BeerDailySummary(date, 0))
+            }
+
+            val currentShowBeer = _uiState.value.showBeer
             _uiState.value = HistoryUiState(
                 dailySummaries = monthlySummary.reversed(),
                 goalMl = goal,
                 goalPerDay = goalPerDay,
                 weekSummaries = filledWeek,
+                beerDailySummaries = beerMonthlySummary.reversed(),
+                beerWeekSummaries = filledBeerWeek,
+                showBeer = currentShowBeer,
                 isLoading = false
             )
         }

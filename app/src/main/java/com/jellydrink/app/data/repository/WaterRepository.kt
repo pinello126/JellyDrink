@@ -9,6 +9,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.jellydrink.app.data.db.dao.BadgeDao
+import com.jellydrink.app.data.db.dao.BeerIntakeDao
+import com.jellydrink.app.data.db.dao.BeerDailySummary
 import com.jellydrink.app.data.db.dao.DailyChallengeDao
 import com.jellydrink.app.data.db.dao.DailyGoalDao
 import com.jellydrink.app.data.db.dao.DailySummary
@@ -17,6 +19,7 @@ import com.jellydrink.app.data.db.dao.JellyfishDao
 import com.jellydrink.app.data.db.dao.UserProfileDao
 import com.jellydrink.app.data.db.dao.WaterIntakeDao
 import com.jellydrink.app.data.db.entity.BadgeEntity
+import com.jellydrink.app.data.db.entity.BeerIntakeEntity
 import com.jellydrink.app.data.db.entity.DailyGoalEntity
 import com.jellydrink.app.data.db.entity.DailyChallengeEntity
 import com.jellydrink.app.data.db.entity.DecorationEntity
@@ -47,6 +50,7 @@ class WaterRepository @Inject constructor(
     private val jellyfishDao: JellyfishDao,
     private val decorationDao: DecorationDao,
     private val dailyGoalDao: DailyGoalDao,
+    private val beerIntakeDao: BeerIntakeDao,
     @ApplicationContext private val context: Context
 ) {
     companion object {
@@ -186,6 +190,18 @@ class WaterRepository @Inject constructor(
                 )
             )
         }
+        // Inserisce il pesce palla se non esiste ancora (IGNORE se già presente)
+        jellyfishDao.insert(
+            JellyfishEntity(
+                id = "pufferfish",
+                nameIt = "Pesce Palla",
+                unlocked = false,
+                selected = false,
+                unlockCondition = "Livello 3 + 300 XP",
+                dateUnlocked = null,
+                cost = 300
+            )
+        )
     }
 
     private suspend fun initDecorations() {
@@ -548,6 +564,36 @@ class WaterRepository @Inject constructor(
 
     fun getSelectedJellyfish(): Flow<JellyfishEntity?> = jellyfishDao.getSelectedJellyfish()
 
+    fun getPufferfish(): Flow<JellyfishEntity?> = jellyfishDao.getJellyfishById("pufferfish")
+
+    suspend fun unlockPufferfish(): Boolean {
+        val pufferfish = jellyfishDao.getJellyfishByIdSync("pufferfish") ?: return false
+        if (pufferfish.unlocked) return false
+        val profile = userProfileDao.getProfileSync() ?: return false
+        if (profile.level < 3) return false
+        if (profile.spendableXp < pufferfish.cost) return false
+        userProfileDao.upsert(profile.copy(spendableXp = profile.spendableXp - pufferfish.cost))
+        jellyfishDao.unlock("pufferfish", today())
+        return true
+    }
+
+    // --- Beer Intake ---
+
+    suspend fun addBeerIntake(amountCl: Int) {
+        beerIntakeDao.insert(
+            BeerIntakeEntity(
+                date = today(),
+                amountCl = amountCl,
+                timestamp = System.currentTimeMillis()
+            )
+        )
+    }
+
+    fun getTodayBeerTotal(): Flow<Int> = beerIntakeDao.getTotalForDate(today())
+
+    suspend fun getBeerDailySummary(startDate: String, endDate: String): List<BeerDailySummary> =
+        beerIntakeDao.getDailySummary(startDate, endDate)
+
     // --- Decorations ---
 
     fun getAllDecorations(): Flow<List<DecorationEntity>> = decorationDao.getAllDecorations()
@@ -584,6 +630,7 @@ class WaterRepository @Inject constructor(
         jellyfishDao.deleteAll()
         decorationDao.deleteAll()
         dailyGoalDao.deleteAll()
+        beerIntakeDao.deleteAll()
         context.dataStore.edit { it.clear() }
 
         // Re-initialize

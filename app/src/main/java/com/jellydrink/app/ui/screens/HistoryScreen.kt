@@ -1,6 +1,8 @@
 package com.jellydrink.app.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
@@ -35,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jellydrink.app.data.db.dao.BeerDailySummary
 import com.jellydrink.app.data.db.dao.DailySummary
 import com.jellydrink.app.ui.theme.JellyBlue
 import com.jellydrink.app.ui.theme.SuccessGreen
@@ -83,65 +87,272 @@ fun HistoryScreen(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Grafico settimanale
+        // Toggle Acqua / Birra
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Ultimi 7 giorni",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    WeeklyChart(
-                        summaries = uiState.weekSummaries,
-                        goalMl = uiState.goalMl,
-                        goalPerDay = uiState.goalPerDay,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                    )
-                }
-            }
-        }
-
-        // Separatore
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Dettaglio giornaliero",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
+            ModeToggle(
+                showBeer = uiState.showBeer,
+                onToggle = { viewModel.toggleMode() }
             )
             Spacer(modifier = Modifier.height(4.dp))
         }
 
-        // Lista giorni
-        if (uiState.dailySummaries.isEmpty()) {
+        if (!uiState.showBeer) {
+            // Grafico settimanale acqua
             item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Ultimi 7 giorni",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        WeeklyChart(
+                            summaries = uiState.weekSummaries,
+                            goalMl = uiState.goalMl,
+                            goalPerDay = uiState.goalPerDay,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Nessun dato disponibile. Inizia a bere!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "Dettaglio giornaliero",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            if (uiState.dailySummaries.isEmpty()) {
+                item {
+                    Text(
+                        text = "Nessun dato disponibile. Inizia a bere!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                items(uiState.dailySummaries) { summary ->
+                    DaySummaryCard(
+                        summary = summary,
+                        goalMl = uiState.goalPerDay[summary.date] ?: uiState.goalMl
+                    )
+                }
             }
         } else {
-            items(uiState.dailySummaries) { summary ->
-                DaySummaryCard(
-                    summary = summary,
-                    goalMl = uiState.goalPerDay[summary.date] ?: uiState.goalMl
+            // Grafico settimanale birra
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Ultimi 7 giorni",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        BeerWeeklyChart(
+                            summaries = uiState.beerWeekSummaries,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Dettaglio giornaliero",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            if (uiState.beerDailySummaries.isEmpty()) {
+                item {
+                    Text(
+                        text = "Nessun dato disponibile. Inizia a tracciare la birra!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                items(uiState.beerDailySummaries) { summary ->
+                    BeerDaySummaryCard(summary = summary)
+                }
             }
         }
 
         // Spazio in fondo per la bottom nav
         item { Spacer(modifier = Modifier.height(56.dp)) }
+    }
+}
+
+@Composable
+private fun ModeToggle(
+    showBeer: Boolean,
+    onToggle: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .background(
+                    color = if (!showBeer) JellyBlue else Color.Transparent,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .clickable { if (showBeer) onToggle() }
+                .padding(vertical = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Acqua",
+                fontWeight = if (!showBeer) FontWeight.Bold else FontWeight.Normal,
+                color = if (!showBeer) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .background(
+                    color = if (showBeer) Color(0xFFFF9800) else Color.Transparent,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .clickable { if (!showBeer) onToggle() }
+                .padding(vertical = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Birra",
+                fontWeight = if (showBeer) FontWeight.Bold else FontWeight.Normal,
+                color = if (showBeer) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+private fun BeerDaySummaryCard(
+    summary: BeerDailySummary,
+    modifier: Modifier = Modifier
+) {
+    val displayDate = try {
+        val date = LocalDate.parse(summary.date, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        date.format(DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ITALIAN))
+    } catch (e: Exception) {
+        summary.date
+    }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFF9800).copy(alpha = 0.08f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = displayDate,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "${summary.totalCl} cl",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = if (summary.totalCl >= 100) "🍺🍺" else if (summary.totalCl > 0) "🍺" else "-",
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+    }
+}
+
+@Composable
+private fun BeerWeeklyChart(
+    summaries: List<BeerDailySummary>,
+    modifier: Modifier = Modifier
+) {
+    val beerColor = Color(0xFFFF9800)
+
+    Canvas(modifier = modifier) {
+        val barWidth = size.width / (summaries.size * 2f)
+        val maxCl = maxOf(100, summaries.maxOfOrNull { it.totalCl } ?: 0)
+        val chartHeight = size.height - 30f
+        val chartBottom = chartHeight
+
+        summaries.forEachIndexed { index, summary ->
+            val barHeight = (summary.totalCl.toFloat() / maxCl) * chartHeight
+            val x = (index * 2 + 0.5f) * barWidth
+
+            if (barHeight > 0f) {
+                drawRoundRect(
+                    color = beerColor,
+                    topLeft = Offset(x, chartBottom - barHeight),
+                    size = Size(barWidth, barHeight),
+                    cornerRadius = CornerRadius(4f, 4f)
+                )
+            }
+
+            val dayLabel = try {
+                val date = LocalDate.parse(summary.date)
+                date.dayOfWeek.name.take(2)
+            } catch (e: Exception) {
+                ""
+            }
+
+            drawContext.canvas.nativeCanvas.apply {
+                drawText(
+                    dayLabel,
+                    x + barWidth / 2f,
+                    size.height,
+                    android.graphics.Paint().apply {
+                        this.color = android.graphics.Color.GRAY
+                        textSize = 24f
+                        textAlign = android.graphics.Paint.Align.CENTER
+                    }
+                )
+            }
+        }
     }
 }
 

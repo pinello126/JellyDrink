@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -68,6 +71,7 @@ import com.jellydrink.app.ui.components.XpBar
 import com.jellydrink.app.data.repository.WaterRepository
 import com.jellydrink.app.ui.theme.GoldBadge
 import com.jellydrink.app.viewmodel.HomeViewModel
+import com.jellydrink.app.viewmodel.BeerViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.cos
@@ -87,230 +91,44 @@ private data class BurstParticle(
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
+    beerViewModel: BeerViewModel = hiltViewModel(),
     onNavigateToShop: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val newBadge by viewModel.newBadge.collectAsStateWithLifecycle()
-    val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
-
-    // State for water FAB expansion
-    var waterMenuExpanded by remember { mutableStateOf(false) }
-
-    // Stato particelle
-    var particles by remember { mutableStateOf<List<BurstParticle>>(emptyList()) }
-    val particleProgress = remember { Animatable(0f) }
-
-    // Funzione per generare burst di particelle
-    fun triggerParticleBurst() {
-        val centerX = 0.5f
-        val centerY = 0.4f
-        val newParticles = List(18) { i ->
-            val angle = (i.toFloat() / 18f) * 2f * Math.PI.toFloat() + Random.nextFloat() * 0.3f
-            val speed = 0.08f + Random.nextFloat() * 0.12f
-            BurstParticle(
-                startX = centerX,
-                startY = centerY,
-                velocityX = cos(angle) * speed,
-                velocityY = sin(angle) * speed - 0.02f,
-                radius = 3f + Random.nextFloat() * 5f,
-                color = listOf(
-                    Color(0xFF60E0F0),
-                    Color(0xFF80C8FF),
-                    Color(0xFFA0E0FF),
-                    Color(0xFF90D0F8),
-                    Color(0xFFB0F0FF)
-                ).random()
-            )
-        }
-        particles = newParticles
-        scope.launch {
-            particleProgress.snapTo(0f)
-            particleProgress.animateTo(
-                1f,
-                animationSpec = tween(800, easing = LinearEasing)
-            )
-            particles = emptyList()
-        }
-    }
+    val pagerState = rememberPagerState(pageCount = { 2 })
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Sfondo acquario con decorazioni
-        AquariumBackground(
-            placedDecorations = uiState.placedDecorations
-        )
-
-        // Layer particelle (sopra sfondo, sotto UI)
-        if (particles.isNotEmpty()) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val w = size.width
-                val h = size.height
-                val t = particleProgress.value
-                val alpha = (1f - t).coerceIn(0f, 1f)
-
-                particles.forEach { p ->
-                    val px = (p.startX + p.velocityX * t) * w
-                    val py = (p.startY + p.velocityY * t + 0.05f * t * t) * h
-                    val r = p.radius * (1f - t * 0.5f)
-                    drawCircle(
-                        color = p.color.copy(alpha = alpha * 0.7f),
-                        radius = r,
-                        center = Offset(px, py)
-                    )
-                    // Alone intorno alla particella
-                    drawCircle(
-                        color = p.color.copy(alpha = alpha * 0.2f),
-                        radius = r * 2f,
-                        center = Offset(px, py)
-                    )
-                }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            when (page) {
+                0 -> WaterPage(viewModel = viewModel, onNavigateToShop = onNavigateToShop)
+                1 -> BeerScreen(viewModel = beerViewModel)
             }
         }
 
-        // Contenuto
-        Column(
+        // Page indicator (due puntini) — sopra la bottom nav
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 12.dp, bottom = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // XP Bar
-            XpBar(
-                level = uiState.level,
-                currentXp = uiState.xp,
-                xpForCurrentLevel = uiState.xpForCurrentLevel,
-                xpForNextLevel = uiState.xpForNextLevel
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Daily Challenge Card
-            ChallengeCard(
-                challenge = uiState.todayChallenge
-            )
-
-            // Medusa + barra progresso verticale affiancata - ORA OCCUPA TUTTO LO SPAZIO!
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Medusa — occupa tutto lo spazio disponibile
-                JellyFishView(
-                    fillPercentage = uiState.percentage,
-                    species = uiState.selectedJellyfishSpecies,
+            repeat(2) { i ->
+                val isSelected = pagerState.currentPage == i
+                Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                )
-
-                // Barra progresso verticale sul lato destro
-                WaterProgressBar(
-                    currentMl = uiState.currentMl,
-                    goalMl = uiState.goalMl,
-                    modifier = Modifier.padding(end = 12.dp)
-                )
-            }
-
-            // Streak info compatto in basso (opzionale, molto piccolo)
-            if (uiState.streak > 0) {
-                Text(
-                    text = "🔥 ${uiState.streak} giorni",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = GoldBadge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                        .size(if (isSelected) 10.dp else 7.dp)
+                        .background(
+                            if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
+                            CircleShape
+                        )
                 )
             }
         }
 
-        // FAB for Shop (top)
-        FloatingActionButton(
-            onClick = onNavigateToShop,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 200.dp),
-            containerColor = Color(0xFF2196F3)
-        ) {
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = "Shop",
-                tint = Color.White
-            )
-        }
-
-        // FAB for Water (below shop button) - NUOVO!
-        FloatingActionButton(
-            onClick = { waterMenuExpanded = !waterMenuExpanded },
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 130.dp),
-            containerColor = Color(0xFF03A9F4)
-        ) {
-            Text(
-                text = "💧",
-                fontSize = 28.sp
-            )
-        }
-
-        // Expanded water glasses menu
-        AnimatedVisibility(
-            visible = waterMenuExpanded,
-            enter = scaleIn() + fadeIn(),
-            exit = scaleOut() + fadeOut(),
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 80.dp, bottom = 115.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .background(
-                        Color.Black.copy(alpha = 0.7f),
-                        RoundedCornerShape(24.dp)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                uiState.glasses.forEach { amount ->
-                    FloatingActionButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            triggerParticleBurst()
-                            viewModel.addWater(amount)
-                            waterMenuExpanded = false // Chiudi dopo selezione
-                        },
-                        modifier = Modifier.size(64.dp),
-                        containerColor = Color(0xFF4FC3F7)
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Canvas(modifier = Modifier.size(32.dp)) {
-                                when {
-                                    amount >= 1000 -> drawWaterBottleLarge()
-                                    amount >= 500 -> drawWaterBottleSmall()
-                                    else -> drawWaterGlass()
-                                }
-                            }
-                            Text(
-                                text = when {
-                                    amount % 1000 == 0 -> "${amount / 1000}L"
-                                    amount % 100 == 0 -> "%.1fL".format(amount / 1000f)
-                                    else -> "%.2fL".format(amount / 1000f)
-                                },
-                                fontSize = 11.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Overlay scuro durante popup
+        // Badge popup — visibile su qualunque pagina
+        val newBadge by viewModel.newBadge.collectAsStateWithLifecycle()
         if (newBadge != null) {
             Box(
                 modifier = Modifier
@@ -318,8 +136,6 @@ fun HomeScreen(
                     .background(Color.Black.copy(alpha = 0.6f))
             )
         }
-
-        // Popup nuovo badge — Dark Premium
         AnimatedVisibility(
             visible = newBadge != null,
             enter = scaleIn(initialScale = 0.85f) + fadeIn(),
@@ -334,6 +150,171 @@ fun HomeScreen(
                     description = badge.description,
                     onDismiss = { viewModel.dismissBadge() }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WaterPage(
+    viewModel: HomeViewModel,
+    onNavigateToShop: () -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
+
+    var waterMenuExpanded by remember { mutableStateOf(false) }
+    var particles by remember { mutableStateOf<List<BurstParticle>>(emptyList()) }
+    val particleProgress = remember { Animatable(0f) }
+
+    fun triggerParticleBurst() {
+        val centerX = 0.5f
+        val centerY = 0.4f
+        val newParticles = List(18) { i ->
+            val angle = (i.toFloat() / 18f) * 2f * Math.PI.toFloat() + Random.nextFloat() * 0.3f
+            val speed = 0.08f + Random.nextFloat() * 0.12f
+            BurstParticle(
+                startX = centerX,
+                startY = centerY,
+                velocityX = cos(angle) * speed,
+                velocityY = sin(angle) * speed - 0.02f,
+                radius = 3f + Random.nextFloat() * 5f,
+                color = listOf(
+                    Color(0xFF60E0F0), Color(0xFF80C8FF), Color(0xFFA0E0FF),
+                    Color(0xFF90D0F8), Color(0xFFB0F0FF)
+                ).random()
+            )
+        }
+        particles = newParticles
+        scope.launch {
+            particleProgress.snapTo(0f)
+            particleProgress.animateTo(1f, animationSpec = tween(800, easing = LinearEasing))
+            particles = emptyList()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AquariumBackground(placedDecorations = uiState.placedDecorations)
+
+        if (particles.isNotEmpty()) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = size.width; val h = size.height
+                val t = particleProgress.value
+                val alpha = (1f - t).coerceIn(0f, 1f)
+                particles.forEach { p ->
+                    val px = (p.startX + p.velocityX * t) * w
+                    val py = (p.startY + p.velocityY * t + 0.05f * t * t) * h
+                    val r = p.radius * (1f - t * 0.5f)
+                    drawCircle(p.color.copy(alpha = alpha * 0.7f), r, Offset(px, py))
+                    drawCircle(p.color.copy(alpha = alpha * 0.2f), r * 2f, Offset(px, py))
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 12.dp, bottom = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            XpBar(
+                level = uiState.level,
+                currentXp = uiState.xp,
+                xpForCurrentLevel = uiState.xpForCurrentLevel,
+                xpForNextLevel = uiState.xpForNextLevel
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            ChallengeCard(challenge = uiState.todayChallenge)
+
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                JellyFishView(
+                    fillPercentage = uiState.percentage,
+                    species = uiState.selectedJellyfishSpecies,
+                    modifier = Modifier.weight(1f).fillMaxSize()
+                )
+                WaterProgressBar(
+                    currentMl = uiState.currentMl,
+                    goalMl = uiState.goalMl,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
+            }
+
+            if (uiState.streak > 0) {
+                Text(
+                    text = "🔥 ${uiState.streak} giorni",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = GoldBadge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+        }
+
+        FloatingActionButton(
+            onClick = onNavigateToShop,
+            modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 200.dp),
+            containerColor = Color(0xFF2196F3)
+        ) {
+            Icon(Icons.Default.ShoppingCart, contentDescription = "Shop", tint = Color.White)
+        }
+
+        FloatingActionButton(
+            onClick = { waterMenuExpanded = !waterMenuExpanded },
+            modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 130.dp),
+            containerColor = Color(0xFF03A9F4)
+        ) {
+            Text("💧", fontSize = 28.sp)
+        }
+
+        AnimatedVisibility(
+            visible = waterMenuExpanded,
+            enter = scaleIn() + fadeIn(),
+            exit = scaleOut() + fadeOut(),
+            modifier = Modifier.align(Alignment.BottomStart).padding(start = 80.dp, bottom = 115.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(24.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                uiState.glasses.forEach { amount ->
+                    FloatingActionButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            triggerParticleBurst()
+                            viewModel.addWater(amount)
+                            waterMenuExpanded = false
+                        },
+                        modifier = Modifier.size(64.dp),
+                        containerColor = Color(0xFF4FC3F7)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Canvas(modifier = Modifier.size(32.dp)) {
+                                when {
+                                    amount >= 1000 -> drawWaterBottleLarge()
+                                    amount >= 500  -> drawWaterBottleSmall()
+                                    else           -> drawWaterGlass()
+                                }
+                            }
+                            Text(
+                                text = when {
+                                    amount % 1000 == 0 -> "${amount / 1000}L"
+                                    amount % 100 == 0  -> "%.1fL".format(amount / 1000f)
+                                    else               -> "%.2fL".format(amount / 1000f)
+                                },
+                                fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         }
     }
