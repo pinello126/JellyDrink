@@ -44,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jellydrink.app.R
+import com.jellydrink.app.data.repository.WaterRepository
 import com.jellydrink.app.ui.components.DecorationPreview
 import com.jellydrink.app.data.db.entity.DecorationEntity
 import com.jellydrink.app.viewmodel.ShopViewModel
@@ -96,12 +99,12 @@ fun ShopScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Negozio")
+                        Text(stringResource(R.string.shop_title))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.shop_back))
                     }
                 },
                 actions = {
@@ -175,8 +178,8 @@ fun ShopScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = when (purchaseResult) {
-                                is ShopViewModel.PurchaseResult.Success -> "Acquisto completato!"
-                                is ShopViewModel.PurchaseResult.InsufficientXp -> "XP insufficienti!"
+                                is ShopViewModel.PurchaseResult.Success -> stringResource(R.string.shop_purchase_success)
+                                is ShopViewModel.PurchaseResult.InsufficientXp -> stringResource(R.string.shop_purchase_insufficient_xp)
                                 null -> ""
                             },
                             color = Color.White,
@@ -208,14 +211,14 @@ private fun DecorationsTab(
         item {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Decorazioni Acquario",
+                text = stringResource(R.string.shop_decorations_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Compra decorazioni per abbellire il tuo acquario!",
+                text = stringResource(R.string.shop_decorations_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -282,8 +285,9 @@ private fun DecorationCard(
 
             // Info
             Column(modifier = Modifier.weight(1f)) {
+                val nameRes = WaterRepository.decoNameRes(decoration.id)
                 Text(
-                    text = decoration.nameIt,
+                    text = if (nameRes != 0) stringResource(nameRes) else decoration.nameIt,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -317,7 +321,7 @@ private fun DecorationCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Acquistato",
+                            text = stringResource(R.string.shop_owned),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF4CAF50)
                         )
@@ -334,7 +338,7 @@ private fun DecorationCard(
                         onCheckedChange = { onTogglePlaced() }
                     )
                     Text(
-                        text = if (decoration.placed) "Visibile" else "Nascosto",
+                        text = if (decoration.placed) stringResource(R.string.shop_visible) else stringResource(R.string.shop_hidden),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -358,7 +362,7 @@ private fun DecorationCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Compra",
+                        text = stringResource(R.string.shop_buy),
                         fontWeight = FontWeight.Bold
                     )
                 }

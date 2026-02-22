@@ -1,5 +1,6 @@
 package com.jellydrink.app.ui.navigation
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -19,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.jellydrink.app.R
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -33,14 +36,14 @@ import com.jellydrink.app.ui.screens.ShopScreen
 
 sealed class Screen(
     val route: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    data object Home : Screen("home", "Home", Icons.Filled.Home, Icons.Outlined.Home)
-    data object Profile : Screen("profile", "Profilo", Icons.Filled.Person, Icons.Outlined.Person)
-    data object History : Screen("history", "Storico", Icons.Filled.History, Icons.Outlined.History)
-    data object Badges : Screen("badges", "Badge", Icons.Filled.EmojiEvents, Icons.Outlined.EmojiEvents)
+    data object Home : Screen("home", R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home)
+    data object Profile : Screen("profile", R.string.nav_profile, Icons.Filled.Person, Icons.Outlined.Person)
+    data object History : Screen("history", R.string.nav_history, Icons.Filled.History, Icons.Outlined.History)
+    data object Badges : Screen("badges", R.string.nav_badges, Icons.Filled.EmojiEvents, Icons.Outlined.EmojiEvents)
 }
 
 // Additional routes (not in bottom nav)
@@ -68,6 +71,7 @@ fun JellyDrinkNavGraph() {
                             it.route == screen.route
                         } == true
 
+                        val label = stringResource(screen.labelRes)
                         NavigationBarItem(
                             selected = selected,
                             onClick = {
@@ -83,10 +87,10 @@ fun JellyDrinkNavGraph() {
                                 Icon(
                                     imageVector = if (selected) screen.selectedIcon
                                     else screen.unselectedIcon,
-                                    contentDescription = screen.label
+                                    contentDescription = label
                                 )
                             },
-                            label = { Text(screen.label) }
+                            label = { Text(label) }
                         )
                     }
                 }

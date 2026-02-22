@@ -1,6 +1,7 @@
 package com.jellydrink.app
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -19,6 +20,7 @@ import com.jellydrink.app.ui.theme.JellyDrinkTheme
 import com.jellydrink.app.receiver.MidnightResetReceiver
 import com.jellydrink.app.worker.StreakDangerWorker
 import com.jellydrink.app.worker.WaterReminderWorker
+import com.jellydrink.app.util.LanguagePreference
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +45,15 @@ class MainActivity : ComponentActivity() {
         if (isGranted) {
             scheduleNotificationWorkers()
             initializeWaterProgressNotification()
+        }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val tag = LanguagePreference.getStoredTag(newBase)
+        if (tag.isEmpty()) {
+            super.attachBaseContext(newBase)
+        } else {
+            super.attachBaseContext(LanguagePreference.applyLocale(newBase, tag))
         }
     }
 

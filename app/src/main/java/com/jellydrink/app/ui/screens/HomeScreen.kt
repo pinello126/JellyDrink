@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -68,6 +69,7 @@ import com.jellydrink.app.ui.components.XpBar
 import com.jellydrink.app.data.repository.WaterRepository
 import com.jellydrink.app.ui.theme.GoldBadge
 import com.jellydrink.app.viewmodel.HomeViewModel
+import com.jellydrink.app.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.cos
@@ -215,7 +217,7 @@ fun HomeScreen(
             // Streak info compatto in basso (opzionale, molto piccolo)
             if (uiState.streak > 0) {
                 Text(
-                    text = "🔥 ${uiState.streak} giorni",
+                    text = stringResource(R.string.streak_days, uiState.streak),
                     style = MaterialTheme.typography.labelMedium,
                     color = GoldBadge,
                     fontWeight = FontWeight.Bold,
@@ -234,7 +236,7 @@ fun HomeScreen(
         ) {
             Icon(
                 imageVector = Icons.Default.ShoppingCart,
-                contentDescription = "Shop",
+                contentDescription = stringResource(R.string.open_shop),
                 tint = Color.White
             )
         }
@@ -327,10 +329,12 @@ fun HomeScreen(
         ) {
             newBadge?.let { badge ->
                 val definition = WaterRepository.ALL_BADGES.find { it.type == badge.type }
+                val nameRes = WaterRepository.badgeNameRes(badge.type)
+                val descRes = WaterRepository.badgeDescRes(badge.type)
                 BadgePopupCard(
                     category = definition?.category ?: "",
-                    name = definition?.name ?: badge.description,
-                    description = badge.description,
+                    name = if (nameRes != 0) stringResource(nameRes) else definition?.name ?: badge.description,
+                    description = if (descRes != 0) stringResource(descRes) else badge.description,
                     onDismiss = { viewModel.dismissBadge() }
                 )
             }
@@ -376,7 +380,7 @@ private fun BadgePopupCard(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "✦  BADGE SBLOCCATO  ✦",
+                    text = stringResource(R.string.badge_unlocked_header),
                     color = Color(0xFF1A1A2E),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 12.sp,
@@ -426,7 +430,7 @@ private fun BadgePopupCard(
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
-                    text = "Stai volando!",
+                    text = stringResource(R.string.badge_unlocked_dismiss),
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 16.sp
                 )

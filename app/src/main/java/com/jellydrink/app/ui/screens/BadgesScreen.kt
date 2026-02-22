@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jellydrink.app.R
 import com.jellydrink.app.data.repository.WaterRepository
 import com.jellydrink.app.data.repository.WaterRepository.Companion.BADGE_CATEGORIES_ORDER
 import com.jellydrink.app.ui.components.BadgeCard
@@ -67,8 +69,9 @@ fun BadgesScreen(
             val categoryEarned = badges.count { it.isEarned }
 
             item(key = "header_$category") {
+                val catNameRes = WaterRepository.categoryNameRes(category)
                 CategoryHeader(
-                    name = category,
+                    name = if (catNameRes != 0) stringResource(catNameRes) else category,
                     earned = categoryEarned,
                     total = badges.size,
                     icon = categoryIcon(category)
@@ -137,14 +140,14 @@ private fun BadgesHeader(earned: Int, total: Int) {
 
             Column {
                 Text(
-                    text = "Badge e Traguardi",
+                    text = stringResource(R.string.badges_screen_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (earned == total && total > 0) "Tutti sbloccati!" else "Completa gli obiettivi per sbloccarli tutti!",
+                    text = if (earned == total && total > 0) stringResource(R.string.badges_all_unlocked) else stringResource(R.string.badges_complete_objectives),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )

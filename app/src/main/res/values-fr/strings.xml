@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ==================== APP ==================== -->
+    <string name="app_name">JellyDrink</string>
+    <string name="widget_description">Affiche la progression de l\'objectif d\'hydratation quotidien avec la méduse</string>
+    <string name="jellyfish">Méduse</string>
+
+    <!-- ==================== NAVIGATION TABS ==================== -->
+    <string name="nav_home">Accueil</string>
+    <string name="nav_profile">Profil</string>
+    <string name="nav_history">Historique</string>
+    <string name="nav_badges">Badges</string>
+
+    <!-- ==================== HOME SCREEN ==================== -->
+    <string name="streak_days">🔥 %1$d jours</string>
+    <string name="open_shop">Boutique</string>
+    <string name="badge_unlocked_header">✦  BADGE DÉBLOQUÉ  ✦</string>
+    <string name="badge_unlocked_dismiss">Tu t\'envoles!</string>
+
+    <!-- ==================== CHALLENGE CARD ==================== -->
+    <string name="challenge_label">Défi du jour</string>
+    <string name="challenge_default_description">Défi quotidien</string>
+    <string name="challenge_completed">Complété</string>
+
+    <!-- Challenge type descriptions -->
+    <string name="challenge_early_bird">Boire avant 9h00</string>
+    <string name="challenge_consistent">Boire au moins 5 fois aujourd\'hui</string>
+    <string name="challenge_big_gulp">Boire 0,5L en une fois</string>
+    <string name="challenge_afternoon_goal">Atteindre l\'objectif avant 21h00</string>
+    <string name="challenge_full_tank">Boire 120% de l\'objectif</string>
+
+    <!-- ==================== XP BAR ==================== -->
+    <string name="xp_level">Niv.%1$d</string>
+    <string name="xp_progress">%1$d / %2$d XP</string>
+
+    <!-- ==================== BADGE CARD ==================== -->
+    <string name="badge_unlocked_date">Débloqué: %1$s</string>
+    <string name="badge_locked">🔒 À débloquer</string>
+
+    <!-- ==================== HISTORY SCREEN ==================== -->
+    <string name="history_title">Historique</string>
+    <string name="history_last_7_days">7 derniers jours</string>
+    <string name="history_daily_detail">Détail quotidien</string>
+    <string name="history_empty">Aucune donnée disponible. Commencez à boire!</string>
+    <string name="history_goal_reached">Objectif atteint</string>
+
+    <!-- ==================== PROFILE + SETTINGS SCREEN ==================== -->
+    <string name="profile_level">Niveau %1$d</string>
+
+    <!-- Statistics cards -->
+    <string name="stat_total_liters">Litres totaux</string>
+    <string name="stat_best_streak">Meilleure série</string>
+    <string name="stat_streak_value">%1$d jours</string>
+    <string name="stat_active_days">Jours actifs</string>
+    <string name="stat_daily_record">Record quotidien</string>
+
+    <!-- Settings cards -->
+    <string name="settings_daily_goal">Objectif quotidien</string>
+    <string name="settings_goal_min">0,5L</string>
+    <string name="settings_goal_max">5L</string>
+    <string name="settings_glasses_title">Verres prédéfinis</string>
+    <string name="settings_glasses_subtitle">Appuyer pour modifier</string>
+    <string name="settings_reminders_title">Rappels</string>
+    <string name="settings_reminders_subtitle">Recevoir des notifications pour se rappeler de boire</string>
+    <string name="settings_delete_data">Supprimer toutes les données</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_edit_glass_title">Modifier le verre</string>
+    <string name="dialog_edit_glass_label">Valeur en litres</string>
+    <string name="dialog_save">Enregistrer</string>
+    <string name="dialog_cancel">Annuler</string>
+    <string name="dialog_reset_title">Confirmer la suppression</string>
+    <string name="dialog_reset_message">Êtes-vous sûr de vouloir supprimer toutes les données? Cette action est irréversible.</string>
+    <string name="dialog_reset_confirm">Tout supprimer</string>
+    <string name="snackbar_data_deleted">Toutes les données ont été supprimées</string>
+
+    <!-- ==================== BADGES SCREEN ==================== -->
+    <string name="badges_screen_title">Badges et jalons</string>
+    <string name="badges_all_unlocked">Tous débloqués!</string>
+    <string name="badges_complete_objectives">Complétez les objectifs pour tous les débloquer!</string>
+
+    <!-- Badge categories -->
+    <string name="badge_cat_primi_passi">Premiers pas</string>
+    <string name="badge_cat_streak">Série</string>
+    <string name="badge_cat_litri">Litres totaux</string>
+    <string name="badge_cat_giorni">Jours actifs</string>
+    <string name="badge_cat_livelli">Niveaux</string>
+    <string name="badge_cat_sfide">Défis et records</string>
+
+    <!-- Badge names -->
+    <string name="badge_name_first_sip">Première gorgée</string>
+    <string name="badge_name_daily_goal">Objectif atteint</string>
+    <string name="badge_name_streak_3">Série de 3</string>
+    <string name="badge_name_streak_7">Série de 7</string>
+    <string name="badge_name_streak_14">Série de 14</string>
+    <string name="badge_name_streak_30">Série de 30</string>
+    <string name="badge_name_streak_100">Série de 100</string>
+    <string name="badge_name_liters_10">10 litres</string>
+    <string name="badge_name_liters_50">50 litres</string>
+    <string name="badge_name_liters_100">100 litres</string>
+    <string name="badge_name_liters_500">500 litres</string>
+    <string name="badge_name_liters_1000">1000 litres</string>
+    <string name="badge_name_active_7">7 jours actifs</string>
+    <string name="badge_name_active_30">30 jours actifs</string>
+    <string name="badge_name_active_100">100 jours actifs</string>
+    <string name="badge_name_active_365">1 an actif</string>
+    <string name="badge_name_level_5">Niveau 5</string>
+    <string name="badge_name_level_10">Niveau 10</string>
+    <string name="badge_name_level_20">Niveau 20</string>
+    <string name="badge_name_level_50">Niveau 50</string>
+    <string name="badge_name_challenges_10">10 défis</string>
+    <string name="badge_name_challenges_50">50 défis</string>
+    <string name="badge_name_challenges_100">100 défis</string>
+    <string name="badge_name_challenges_150">150 défis</string>
+    <string name="badge_name_challenges_200">200 défis</string>
+
+    <!-- Badge descriptions -->
+    <string name="badge_desc_first_sip">Vous avez enregistré votre première consommation d\'eau</string>
+    <string name="badge_desc_daily_goal">Vous avez atteint votre objectif quotidien</string>
+    <string name="badge_desc_streak_3">Trois jours consécutifs à 100%</string>
+    <string name="badge_desc_streak_7">Une semaine entière à 100%</string>
+    <string name="badge_desc_streak_14">Deux semaines consécutives à 100%</string>
+    <string name="badge_desc_streak_30">Un mois entier à 100%</string>
+    <string name="badge_desc_streak_100">Cent jours consécutifs à 100%! Légendaire!</string>
+    <string name="badge_desc_liters_10">Vous avez bu 10 litres d\'eau au total</string>
+    <string name="badge_desc_liters_50">Vous avez bu 50 litres d\'eau au total</string>
+    <string name="badge_desc_liters_100">Vous avez bu 100 litres d\'eau au total</string>
+    <string name="badge_desc_liters_500">Vous avez bu 500 litres d\'eau au total</string>
+    <string name="badge_desc_liters_1000">Vous avez bu 1000 litres d\'eau! Incroyable!</string>
+    <string name="badge_desc_active_7">Vous avez enregistré de l\'eau pendant 7 jours</string>
+    <string name="badge_desc_active_30">Vous avez enregistré de l\'eau pendant 30 jours</string>
+    <string name="badge_desc_active_100">Vous avez enregistré de l\'eau pendant 100 jours</string>
+    <string name="badge_desc_active_365">Vous avez enregistré de l\'eau pendant 365 jours!</string>
+    <string name="badge_desc_level_5">Vous avez atteint le niveau 5</string>
+    <string name="badge_desc_level_10">Vous avez atteint le niveau 10</string>
+    <string name="badge_desc_level_20">Vous avez atteint le niveau 20</string>
+    <string name="badge_desc_level_50">Vous avez atteint le niveau 50!</string>
+    <string name="badge_desc_challenges_10">Vous avez complété 10 défis quotidiens</string>
+    <string name="badge_desc_challenges_50">Vous avez complété 50 défis quotidiens</string>
+    <string name="badge_desc_challenges_100">Vous avez complété 100 défis quotidiens</string>
+    <string name="badge_desc_challenges_150">Vous avez complété 150 défis quotidiens</string>
+    <string name="badge_desc_challenges_200">Vous avez complété 200 défis quotidiens</string>
+
+    <!-- ==================== LANGUAGE SELECTOR ==================== -->
+    <string name="settings_language_title">Langue</string>
+    <string name="lang_it">🇮🇹 Italiano</string>
+    <string name="lang_en">🇬🇧 English</string>
+    <string name="lang_fr">🇫🇷 Français</string>
+    <string name="lang_es">🇪🇸 Español</string>
+
+    <!-- ==================== NOTIFICATION ==================== -->
+    <string name="notification_title">Objectif d\'hydratation</string>
+
+    <!-- ==================== SHOP SCREEN ==================== -->
+    <string name="shop_title">Boutique</string>
+    <string name="shop_back">Retour</string>
+    <string name="shop_decorations_title">Décorations d\'aquarium</string>
+    <string name="shop_decorations_subtitle">Achetez des décorations pour embellir votre aquarium!</string>
+    <string name="shop_purchase_success">Achat réussi!</string>
+    <string name="shop_purchase_insufficient_xp">XP insuffisants!</string>
+    <string name="shop_owned">Acheté</string>
+    <string name="shop_visible">Visible</string>
+    <string name="shop_hidden">Caché</string>
+    <string name="shop_buy">Acheter</string>
+
+    <!-- Decoration names -->
+    <string name="deco_fish_blue">Petit poisson bleu</string>
+    <string name="deco_fish_orange">Poisson clown</string>
+    <string name="deco_starfish">Étoile de mer</string>
+    <string name="deco_coral_pink">Corail rose</string>
+    <string name="deco_treasure">Coffre au trésor</string>
+    <string name="deco_turtle">Tortue</string>
+    <string name="deco_seahorse">Hippocampe</string>
+    <string name="deco_crab">Crabe</string>
+
+</resources>

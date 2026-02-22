@@ -20,9 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jellydrink.app.R
 
 // Gold colors for XP bar
 private val GoldLight = Color(0xFFFFD700)
@@ -70,7 +72,7 @@ fun XpBar(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Lv.$level",
+                text = stringResource(R.string.xp_level, level),
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp
@@ -99,7 +101,7 @@ fun XpBar(
 
             // XP text overlay
             Text(
-                text = "$xpInCurrentLevel / $xpNeededForLevel XP",
+                text = stringResource(R.string.xp_progress, xpInCurrentLevel, xpNeededForLevel),
                 color = Color.White,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,

@@ -38,9 +38,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jellydrink.app.R
 import com.jellydrink.app.data.db.entity.DailyChallengeEntity
 import com.jellydrink.app.data.repository.WaterRepository
 
@@ -57,8 +59,8 @@ fun ChallengeCard(
 ) {
     if (challenge == null) return
 
-    val challengeInfo = WaterRepository.CHALLENGE_TYPES.find { it.id == challenge.type }
-    val description = challengeInfo?.description ?: "Sfida giornaliera"
+    val descRes = WaterRepository.challengeDescRes(challenge.type)
+    val description = if (descRes != 0) stringResource(descRes) else stringResource(R.string.challenge_default_description)
 
     val progress = when (challenge.type) {
         "consistent" -> challenge.currentProgress.toFloat() / challenge.targetValue
@@ -109,7 +111,7 @@ fun ChallengeCard(
                 if (challenge.completed) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Completato",
+                        contentDescription = stringResource(R.string.challenge_completed),
                         tint = ChallengeGreen,
                         modifier = Modifier.size(24.dp)
                     )
@@ -132,7 +134,7 @@ fun ChallengeCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Sfida del giorno",
+                        text = stringResource(R.string.challenge_label),
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium

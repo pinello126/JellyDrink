@@ -24,8 +24,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.jellydrink.app.R
 import com.jellydrink.app.data.repository.WaterRepository
 import kotlin.math.PI
 import kotlin.math.cos
@@ -74,6 +76,11 @@ fun BadgeCard(
             }
         )
     ) {
+        val nameRes = WaterRepository.badgeNameRes(badge.type)
+        val descRes = WaterRepository.badgeDescRes(badge.type)
+        val badgeName = if (nameRes != 0) stringResource(nameRes) else badge.name
+        val badgeDesc = if (descRes != 0) stringResource(descRes) else badge.description
+
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -86,7 +93,7 @@ fun BadgeCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = badge.name,
+                    text = badgeName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = if (badge.isEarned) FontWeight.Bold else FontWeight.Normal,
                     color = if (badge.isEarned) {
@@ -96,7 +103,7 @@ fun BadgeCard(
                     }
                 )
                 Text(
-                    text = badge.description,
+                    text = badgeDesc,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (badge.isEarned) {
                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -106,13 +113,13 @@ fun BadgeCard(
                 )
                 if (badge.isEarned && badge.dateEarned != null) {
                     Text(
-                        text = "Sbloccato: ${badge.dateEarned}",
+                        text = stringResource(R.string.badge_unlocked_date, badge.dateEarned),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 } else if (!badge.isEarned) {
                     Text(
-                        text = "🔒 Da sbloccare",
+                        text = stringResource(R.string.badge_locked),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                         fontWeight = FontWeight.Bold

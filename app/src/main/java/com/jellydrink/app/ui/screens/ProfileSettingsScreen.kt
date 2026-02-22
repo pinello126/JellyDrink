@@ -49,6 +49,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.jellydrink.app.util.LanguagePreference
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -58,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jellydrink.app.R
 import com.jellydrink.app.ui.components.XpBar
 import com.jellydrink.app.viewmodel.ProfileViewModel
 import com.jellydrink.app.viewmodel.SettingsViewModel
@@ -79,13 +84,14 @@ fun ProfileSettingsScreen(
     val profileState by profileViewModel.uiState.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var editingGlassIndex by remember { mutableStateOf(-1) }
     var editGlassInput by remember { mutableStateOf("") }
 
     LaunchedEffect(settingsState.resetDone) {
         if (settingsState.resetDone) {
-            snackbarHostState.showSnackbar("Tutti i dati sono stati cancellati")
+            snackbarHostState.showSnackbar(context.getString(R.string.snackbar_data_deleted))
             settingsViewModel.dismissResetDone()
         }
     }
@@ -127,7 +133,7 @@ fun ProfileSettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Obiettivo giornaliero",
+                            text = stringResource(R.string.settings_daily_goal),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -149,8 +155,8 @@ fun ProfileSettingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("0.5L", style = MaterialTheme.typography.bodySmall)
-                            Text("5L", style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.settings_goal_min), style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.settings_goal_max), style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -166,12 +172,12 @@ fun ProfileSettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Bicchieri predefiniti",
+                            text = stringResource(R.string.settings_glasses_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "Tocca per modificare",
+                            text = stringResource(R.string.settings_glasses_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
@@ -223,12 +229,12 @@ fun ProfileSettingsScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Promemoria",
+                                    text = stringResource(R.string.settings_reminders_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Ricevi notifiche per ricordarti di bere",
+                                    text = stringResource(R.string.settings_reminders_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
@@ -240,6 +246,11 @@ fun ProfileSettingsScreen(
                         )
                     }
                 }
+            }
+
+            // --- Lingua ---
+            item {
+                LanguageSelector()
             }
 
             // --- Reset dati ---
@@ -254,7 +265,7 @@ fun ProfileSettingsScreen(
                 ) {
                     Icon(Icons.Default.DeleteForever, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cancella tutti i dati")
+                    Text(stringResource(R.string.settings_delete_data))
                 }
             }
 
@@ -272,7 +283,7 @@ fun ProfileSettingsScreen(
     if (editingGlassIndex >= 0) {
         AlertDialog(
             onDismissRequest = { editingGlassIndex = -1 },
-            title = { Text("Modifica bicchiere") },
+            title = { Text(stringResource(R.string.dialog_edit_glass_title)) },
             text = {
                 OutlinedTextField(
                     value = editGlassInput,
@@ -285,7 +296,7 @@ fun ProfileSettingsScreen(
                             else -> parts[0] + "." + parts[1].take(2)
                         }
                     },
-                    label = { Text("Valore in litri") },
+                    label = { Text(stringResource(R.string.dialog_edit_glass_label)) },
                     suffix = { Text("L") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true
@@ -302,12 +313,12 @@ fun ProfileSettingsScreen(
                         editingGlassIndex = -1
                     }
                 ) {
-                    Text("Salva")
+                    Text(stringResource(R.string.dialog_save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { editingGlassIndex = -1 }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
             }
         )
@@ -317,9 +328,9 @@ fun ProfileSettingsScreen(
     if (settingsState.showResetConfirm) {
         AlertDialog(
             onDismissRequest = { settingsViewModel.dismissResetConfirm() },
-            title = { Text("Conferma cancellazione") },
+            title = { Text(stringResource(R.string.dialog_reset_title)) },
             text = {
-                Text("Sei sicuro di voler cancellare tutti i dati? Questa azione non puo' essere annullata.")
+                Text(stringResource(R.string.dialog_reset_message))
             },
             confirmButton = {
                 TextButton(
@@ -328,12 +339,12 @@ fun ProfileSettingsScreen(
                         settingsViewModel.dismissResetConfirm()
                     }
                 ) {
-                    Text("Cancella tutto", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.dialog_reset_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { settingsViewModel.dismissResetConfirm() }) {
-                    Text("Annulla")
+                    Text(stringResource(R.string.dialog_cancel))
                 }
             }
         )
@@ -382,7 +393,7 @@ private fun ProfileHeader(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Livello $level",
+                text = stringResource(R.string.profile_level, level),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -418,15 +429,15 @@ private fun StatisticsSection(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.WaterDrop,
                 iconColor = Color(0xFF2196F3),
-                title = "Litri Totali",
+                title = stringResource(R.string.stat_total_liters),
                 value = String.format("%.1fL", totalLiters)
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.LocalFireDepartment,
                 iconColor = Color(0xFFFF5722),
-                title = "Miglior Streak",
-                value = "$bestStreak giorni"
+                title = stringResource(R.string.stat_best_streak),
+                value = stringResource(R.string.stat_streak_value, bestStreak)
             )
         }
         Row(
@@ -437,14 +448,14 @@ private fun StatisticsSection(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Today,
                 iconColor = Color(0xFF4CAF50),
-                title = "Giorni Attivi",
+                title = stringResource(R.string.stat_active_days),
                 value = "$activeDays"
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Star,
                 iconColor = Color(0xFFFFD700),
-                title = "Record Giornaliero",
+                title = stringResource(R.string.stat_daily_record),
                 value = formatLiters(dailyRecord)
             )
         }
@@ -490,6 +501,55 @@ private fun StatCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
+        }
+    }
+}
+
+private data class LanguageOption(val tag: String, val label: String)
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LanguageSelector() {
+    val context = LocalContext.current
+    val languages = listOf(
+        LanguageOption("it", stringResource(R.string.lang_it)),
+        LanguageOption("en", stringResource(R.string.lang_en)),
+        LanguageOption("fr", stringResource(R.string.lang_fr)),
+        LanguageOption("es", stringResource(R.string.lang_es))
+    )
+
+    var currentTag by remember { mutableStateOf(LanguagePreference.getCurrentTag(context)) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.settings_language_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                languages.forEach { lang ->
+                    val selected = currentTag == lang.tag
+                    InputChip(
+                        selected = selected,
+                        onClick = {
+                            LanguagePreference.setTag(context, lang.tag)
+                            currentTag = lang.tag
+                            (context as? Activity)?.recreate()
+                        },
+                        label = { Text(lang.label) }
+                    )
+                }
+            }
         }
     }
 }
