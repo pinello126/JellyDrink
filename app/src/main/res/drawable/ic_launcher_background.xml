@@ -5,84 +5,8 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Gradiente oceano profondo -->
     <path
-        android:fillColor="#061830"
+        android:fillColor="#0D1B2A"
         android:pathData="M0,0h108v108h-108z" />
-    <path
-        android:fillColor="#0A3860"
-        android:fillAlpha="0.7"
-        android:pathData="M0,20h108v88h-108z" />
-    <path
-        android:fillColor="#0C4A78"
-        android:fillAlpha="0.5"
-        android:pathData="M0,45h108v63h-108z" />
-
-    <!-- Raggi di luce -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.04"
-        android:pathData="M25,0 L30,0 L50,80 L40,80 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.03"
-        android:pathData="M60,0 L67,0 L82,75 L70,75 Z" />
-
-    <!-- Sabbia in basso -->
-    <path
-        android:fillColor="#E8D0A0"
-        android:pathData="M0,92 Q14,88 27,91 Q40,94 54,90 Q68,87 81,91 Q94,94 108,90 L108,108 L0,108 Z" />
-    <path
-        android:fillColor="#C8A870"
-        android:fillAlpha="0.6"
-        android:pathData="M0,96 Q20,93 40,96 Q60,99 80,95 Q95,92 108,96 L108,108 L0,108 Z" />
-
-    <!-- Alghe piccole -->
-    <path
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#28A048"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M18,92 Q15,82 18,72 Q21,65 17,58" />
-    <path
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#1A7030"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M22,93 Q19,85 23,76 Q26,70 22,64" />
-    <path
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#28A048"
-        android:strokeWidth="2.5"
-        android:strokeLineCap="round"
-        android:pathData="M88,91 Q92,82 88,73 Q85,66 90,59" />
-    <path
-        android:fillColor="@android:color/transparent"
-        android:strokeColor="#1A7030"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"
-        android:pathData="M92,92 Q95,84 91,76" />
-
-    <!-- Bolle -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.2"
-        android:pathData="M30,65 A2.5,2.5 0 1,1 30,65.01 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.15"
-        android:pathData="M75,50 A2,2 0 1,1 75,50.01 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.18"
-        android:pathData="M82,72 A1.5,1.5 0 1,1 82,72.01 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.12"
-        android:pathData="M22,42 A1.8,1.8 0 1,1 22,42.01 Z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.15"
-        android:pathData="M65,30 A1.5,1.5 0 1,1 65,30.01 Z" />
 
 </vector>
