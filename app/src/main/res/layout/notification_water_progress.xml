@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -36,7 +37,7 @@
             android:id="@+id/notification_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="1500 / 2000 ml"
+            tools:text="1500 / 2000 ml"
             android:textSize="12sp"
             android:textColor="#666666"
             android:layout_marginTop="2dp" />
@@ -48,7 +49,7 @@
         android:id="@+id/notification_percentage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="75%"
+        tools:text="75%"
         android:textStyle="bold"
         android:textSize="20sp"
         android:textColor="#00CED1"
