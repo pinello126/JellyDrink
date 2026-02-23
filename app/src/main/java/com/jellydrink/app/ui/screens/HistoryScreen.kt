@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jellydrink.app.R
 import com.jellydrink.app.data.db.dao.DailySummary
 import com.jellydrink.app.ui.theme.JellyBlue
 import com.jellydrink.app.ui.theme.SuccessGreen
@@ -75,7 +77,7 @@ fun HistoryScreen(
         // Titolo
         item {
             Text(
-                text = "Storico",
+                text = stringResource(R.string.history_title),
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -93,7 +95,7 @@ fun HistoryScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Ultimi 7 giorni",
+                        text = stringResource(R.string.history_last_7_days),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -114,7 +116,7 @@ fun HistoryScreen(
         item {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Dettaglio giornaliero",
+                text = stringResource(R.string.history_daily_detail),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -126,7 +128,7 @@ fun HistoryScreen(
         if (uiState.dailySummaries.isEmpty()) {
             item {
                 Text(
-                    text = "Nessun dato disponibile. Inizia a bere!",
+                    text = stringResource(R.string.history_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -200,7 +202,7 @@ private fun DaySummaryCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Obiettivo raggiunto",
+                        contentDescription = stringResource(R.string.history_goal_reached),
                         tint = SuccessGreen
                     )
                 }

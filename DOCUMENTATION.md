@@ -1,6 +1,6 @@
 # JellyDrink — Documentazione Tecnica
 
-> Versione DB: **6** · Stack: Kotlin · Jetpack Compose · Room · Hilt · DataStore · AlarmManager · WorkManager
+> Versione DB: **6** · Stack: Kotlin · Jetpack Compose · Room · Hilt · DataStore · AlarmManager · WorkManager · Localizzazione IT/EN/FR/ES
 
 ---
 
@@ -19,8 +19,9 @@
 11. [Background Workers e Receivers](#11-background-workers-e-receivers)
 12. [Dependency Injection](#12-dependency-injection)
 13. [Tema e Stile](#13-tema-e-stile)
-14. [Formule e Costanti di Business](#14-formule-e-costanti-di-business)
-15. [Struttura File del Progetto](#15-struttura-file-del-progetto)
+14. [Sistema di Localizzazione](#14-sistema-di-localizzazione)
+15. [Formule e Costanti di Business](#15-formule-e-costanti-di-business)
+16. [Struttura File del Progetto](#16-struttura-file-del-progetto)
 
 ---
 
@@ -693,7 +694,8 @@ Schermata unificata Profilo + Impostazioni. Usa `ProfileViewModel` + `SettingsVi
 3. **Obiettivo Giornaliero** — Slider 500-5000ml con step 100ml (18 step), aggiornamento in tempo reale
 4. **Bicchieri Predefiniti** — 3 InputChip editabili (tap apre dialog di modifica), formato in ml/L
 5. **Promemoria** — Switch per abilitare/disabilitare le notifiche
-6. **Cancella tutti i dati** — Bottone rosso con confirmation dialog
+6. **Lingua** — Selettore lingua con 4 chip (IT, EN, FR, ES), vedi [Sezione 14](#14-sistema-di-localizzazione)
+7. **Cancella tutti i dati** — Bottone rosso con confirmation dialog
 
 ---
 
@@ -928,17 +930,19 @@ Contiene utility per le animazioni:
 4 tab nella bottom navigation bar + 1 schermata modale (Shop):
 
 ```kotlin
-sealed class Screen(val route: String, val label: String) {
-    object Home    : Screen("home",    "Home")
-    object Profile : Screen("profile", "Profilo")
-    object History : Screen("history", "Storico")
-    object Badges  : Screen("badges",  "Badge")
+sealed class Screen(val route: String, @StringRes val labelRes: Int, ...) {
+    data object Home    : Screen("home",    R.string.nav_home, ...)
+    data object Profile : Screen("profile", R.string.nav_profile, ...)
+    data object History : Screen("history", R.string.nav_history, ...)
+    data object Badges  : Screen("badges",  R.string.nav_badges, ...)
 }
 
 object Routes {
     const val SHOP = "shop"
 }
 ```
+
+> Le label dei tab usano `@StringRes` (resource ID) invece di stringhe hardcoded. Il composable risolve con `stringResource(screen.labelRes)` per supportare la localizzazione.
 
 | Route | Schermata | Icona |
 |---|---|---|
@@ -1138,7 +1142,188 @@ val TextOnDark   = Color(0xFFE3F2FD)
 
 ---
 
-## 14. Formule e Costanti di Business
+## 14. Sistema di Localizzazione
+
+L'app supporta 4 lingue: **Italiano** (default), **English**, **Français**, **Español**. L'implementazione è compatibile con tutti i dispositivi Android (API 26+).
+
+---
+
+### 14.1 Struttura risorse stringhe
+
+```
+app/src/main/res/
+├── values/strings.xml          ← Italiano (default)
+├── values-en/strings.xml       ← English
+├── values-fr/strings.xml       ← Français
+├── values-es/strings.xml       ← Español
+└── xml/locale_config.xml       ← Dichiarazione lingue supportate (Android 13+)
+```
+
+**`locale_config.xml`** — necessario per l'integrazione con il sistema Android 13+:
+```xml
+<locale-config xmlns:android="...">
+    <locale android:name="it"/>
+    <locale android:name="en"/>
+    <locale android:name="fr"/>
+    <locale android:name="es"/>
+</locale-config>
+```
+
+`AndroidManifest.xml` referenzia il file: `android:localeConfig="@xml/locale_config"` nell'`<application>`.
+
+---
+
+### 14.2 `strings.xml` — 125+ stringhe
+
+Ogni schermata ha le proprie stringhe organizzate per sezione nei file `values*/strings.xml`. Categorie:
+
+| Prefisso | Scope |
+|---|---|
+| `nav_` | Label tab di navigazione |
+| `home_` | HomeScreen |
+| `challenge_` | ChallengeCard e tipi di sfida |
+| `badge_`, `badge_name_`, `badge_desc_`, `badge_cat_` | BadgesScreen e badge cards |
+| `shop_`, `deco_` | ShopScreen e decorazioni |
+| `history_` | HistoryScreen |
+| `settings_`, `lang_` | ProfileSettingsScreen |
+| `xp_` | XpBar |
+| `notification_` | Notifica lock screen |
+
+---
+
+### 14.3 `@StringRes` lookup functions in `WaterRepository`
+
+Badge, sfide e decorazioni sono entità DB con campi stringa italiani (`nameIt`, `description`, ecc.). Per localizzare senza modificare lo schema DB né i ViewModel, `WaterRepository.Companion` espone funzioni di lookup che mappano `type`/`id` → `@StringRes Int`:
+
+```kotlin
+companion object {
+    @StringRes fun badgeNameRes(type: String): Int = when (type) {
+        "first_sip" -> R.string.badge_name_first_sip
+        "goal_met"  -> R.string.badge_name_goal_met
+        // ... 24 altri badge
+        else -> 0
+    }
+
+    @StringRes fun badgeDescRes(type: String): Int = when (type) { ... }
+    @StringRes fun challengeDescRes(type: String): Int = when (type) { ... }
+    @StringRes fun decoNameRes(id: String): Int = when (id) { ... }
+    @StringRes fun categoryNameRes(category: String): Int = when (category) { ... }
+}
+```
+
+**Pattern di utilizzo nei composable:**
+```kotlin
+// In BadgeCard.kt
+val nameRes = WaterRepository.badgeNameRes(badge.type)
+val name = if (nameRes != 0) stringResource(nameRes) else badge.definition.nameIt
+
+// In ChallengeCard.kt
+val descRes = WaterRepository.challengeDescRes(challenge.type)
+val desc = if (descRes != 0) stringResource(descRes) else ""
+```
+
+I valori DB (`nameIt`, `description`) restano come fallback se la stringa non è trovata.
+
+---
+
+### 14.4 Selezione lingua — `LanguagePreference` + `attachBaseContext`
+
+**Approccio scelto:** SharedPreferences + override di `attachBaseContext()` in `MainActivity`.
+
+Questo approccio funziona su **tutti i dispositivi Android** (API 26+), a differenza di `AppCompatDelegate.setApplicationLocales()` che richiede `AppCompatActivity` per funzionare correttamente su API < 33.
+
+---
+
+**`util/LanguagePreference.kt`** — oggetto singleton:
+
+```kotlin
+object LanguagePreference {
+    // Legge il tag lingua salvato ("it", "en", "fr", "es", o "" se mai impostato)
+    fun getStoredTag(context: Context): String
+
+    // Salva il tag lingua in SharedPreferences
+    fun setTag(context: Context, tag: String)
+
+    // Tag corrente: da SharedPreferences, o dal locale di sistema se mai impostato
+    fun getCurrentTag(context: Context): String
+
+    // Crea un Context con il locale specificato applicato
+    // Usa createConfigurationContext() (API 17+, non deprecata)
+    fun applyLocale(base: Context, tag: String): Context {
+        val locale = Locale(tag)
+        Locale.setDefault(locale)
+        val config = Configuration(base.resources.configuration)
+        config.setLocale(locale)
+        return base.createConfigurationContext(config)
+    }
+}
+```
+
+**SharedPreferences:** file `"language_prefs"`, chiave `"selected_language"`.
+
+---
+
+**`MainActivity.kt`** — override di `attachBaseContext()`:
+
+```kotlin
+override fun attachBaseContext(newBase: Context) {
+    val tag = LanguagePreference.getStoredTag(newBase)
+    if (tag.isEmpty()) {
+        super.attachBaseContext(newBase)
+    } else {
+        super.attachBaseContext(LanguagePreference.applyLocale(newBase, tag))
+    }
+}
+```
+
+`attachBaseContext()` viene chiamato da Android **prima** dell'inflate del layout e prima di `onCreate()`. Applicare qui il locale garantisce che tutte le risorse dell'Activity vengano risolte nella lingua corretta, su qualsiasi versione Android.
+
+---
+
+**`LanguageSelector` in `ProfileSettingsScreen.kt`** — composable privato:
+
+```kotlin
+@Composable
+private fun LanguageSelector() {
+    val context = LocalContext.current
+    var currentTag by remember { mutableStateOf(LanguagePreference.getCurrentTag(context)) }
+
+    // 4 InputChip: IT / EN / FR / ES
+    InputChip(
+        selected = currentTag == lang.tag,
+        onClick = {
+            LanguagePreference.setTag(context, lang.tag)  // 1. Salva in SharedPreferences
+            currentTag = lang.tag                          // 2. Aggiorna UI chip selected
+            (context as? Activity)?.recreate()            // 3. Riavvia Activity → attachBaseContext() ricarica il locale
+        },
+        label = { Text(lang.label) }
+    )
+}
+```
+
+**Flusso completo al cambio lingua:**
+1. Utente tocca un chip lingua
+2. Il tag viene salvato in SharedPreferences
+3. `activity.recreate()` riavvia la `MainActivity`
+4. `attachBaseContext()` legge il tag salvato e applica il locale
+5. L'intera UI viene re-renderizzata nella nuova lingua
+
+---
+
+### 14.5 Tema XML compatibile con AppCompat
+
+Poiché `appcompat:1.7.0` è incluso come dipendenza (necessario per le API AppCompat), il tema XML è stato aggiornato:
+
+```xml
+<!-- res/values/themes.xml -->
+<style name="Theme.JellyDrink" parent="Theme.AppCompat.DayNight.NoActionBar">
+```
+
+Jetpack Compose ignora il tema XML e usa il proprio `MaterialTheme`, quindi questo cambiamento non ha impatto visivo.
+
+---
+
+## 15. Formule e Costanti di Business
 
 ### Sistema XP
 
@@ -1186,13 +1371,13 @@ Scala grafico storico:      massimo tra goal e record del periodo
 
 ---
 
-## 15. Struttura File del Progetto
+## 16. Struttura File del Progetto
 
 ```
 app/src/main/java/com/jellydrink/app/
 │
 ├── JellyDrinkApp.kt                        @HiltAndroidApp, NotificationChannels
-├── MainActivity.kt                         Permessi, WorkManager scheduling, alarm midnight
+├── MainActivity.kt                         Permessi, WorkManager scheduling, alarm midnight, attachBaseContext locale
 │
 ├── data/
 │   ├── db/
@@ -1216,10 +1401,13 @@ app/src/main/java/com/jellydrink/app/
 │   │       ├── DailyGoalEntity.kt
 │   │       └── BeerIntakeEntity.kt         (branch birra)
 │   └── repository/
-│       └── WaterRepository.kt              Business logic centrale
+│       └── WaterRepository.kt              Business logic centrale + @StringRes lookup functions
 │
 ├── di/
 │   └── AppModule.kt                        Hilt Module (DB, DAOs, Repository)
+│
+├── util/
+│   └── LanguagePreference.kt               SharedPreferences per lingua + applyLocale()
 │
 ├── notification/
 │   ├── NotificationHelper.kt               Canali generici
@@ -1260,7 +1448,7 @@ app/src/main/java/com/jellydrink/app/
 │   │   └── PufferfishView.kt              (branch birra)
 │   ├── screens/
 │   │   ├── HomeScreen.kt
-│   │   ├── ProfileSettingsScreen.kt       Profilo + Impostazioni unificati
+│   │   ├── ProfileSettingsScreen.kt       Profilo + Impostazioni unificati + LanguageSelector
 │   │   ├── BadgesScreen.kt                26 badge in 6 categorie
 │   │   ├── HistoryScreen.kt
 │   │   ├── ShopScreen.kt
@@ -1278,4 +1466,16 @@ app/src/main/java/com/jellydrink/app/
 
 ---
 
-*Documentazione generata il 21/02/2026 — JellyDrink Android App*
+**Risorse localizzazione:**
+```
+app/src/main/res/
+├── values/strings.xml              Italiano (default, ~125 stringhe)
+├── values-en/strings.xml           English
+├── values-fr/strings.xml           Français
+├── values-es/strings.xml           Español
+└── xml/locale_config.xml           Dichiarazione lingue supportate
+```
+
+---
+
+*Documentazione aggiornata il 23/02/2026 — JellyDrink Android App*
