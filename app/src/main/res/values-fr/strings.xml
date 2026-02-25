@@ -55,6 +55,11 @@
     <string name="stat_active_days">Jours actifs</string>
     <string name="stat_daily_record">Record quotidien</string>
 
+    <!-- Streak card -->
+    <string name="streak_current_title">Série actuelle</string>
+    <string name="streak_record">Record : %1$d jours</string>
+    <string name="streak_new_record">Nouveau record !</string>
+
     <!-- Settings cards -->
     <string name="settings_daily_goal">Objectif quotidien</string>
     <string name="settings_goal_min">0,5L</string>

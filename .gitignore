@@ -16,3 +16,8 @@ captures/
 
 # Log
 *.log
+
+# Keystore — NON pushare mai
+*.jks
+*.keystore
+keystore.properties

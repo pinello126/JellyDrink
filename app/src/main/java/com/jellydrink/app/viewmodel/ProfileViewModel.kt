@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -16,7 +17,8 @@ data class ProfileUiState(
     val profile: UserProfileEntity? = null,
     val badges: List<WaterRepository.BadgeWithStatus> = emptyList(),
     val xpForCurrentLevel: Int = 0,
-    val xpForNextLevel: Int = 100
+    val xpForNextLevel: Int = 100,
+    val currentStreak: Int = 0
 ) {
     val level: Int get() = profile?.level ?: 1
     val xp: Int get() = profile?.xp ?: 0
@@ -42,11 +44,13 @@ class ProfileViewModel @Inject constructor(
         repository.getProfile(),
         badgesFlow
     ) { profile, badges ->
+        val goal = repository.getDailyGoal().first()
         ProfileUiState(
             profile = profile,
             badges = badges,
             xpForCurrentLevel = repository.xpForLevel(profile?.level ?: 1),
-            xpForNextLevel = repository.xpForNextLevel(profile?.xp ?: 0)
+            xpForNextLevel = repository.xpForNextLevel(profile?.xp ?: 0),
+            currentStreak = repository.calculateStreak(goal)
         )
     }.stateIn(
         scope = viewModelScope,
