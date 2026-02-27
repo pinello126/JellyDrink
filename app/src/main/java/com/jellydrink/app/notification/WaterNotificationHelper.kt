@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.jellydrink.app.MainActivity
@@ -32,18 +31,16 @@ object WaterNotificationHelper {
      * Crea il canale di notifica (necessario per Android 8.0+)
      */
     fun createNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Progresso Idratazione"
-            val descriptionText = "Mostra il progresso dell'obiettivo giornaliero di acqua"
-            val importance = NotificationManager.IMPORTANCE_LOW // Non fa suono/vibrazione
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-                setShowBadge(false)
-            }
-
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Progresso Idratazione",
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Mostra il progresso dell'obiettivo giornaliero di acqua"
+            setShowBadge(false)
         }
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     /**
@@ -95,11 +92,4 @@ object WaterNotificationHelper {
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
-    /**
-     * Rimuove la notifica persistente
-     */
-    fun hideWaterProgressNotification(context: Context) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(NOTIFICATION_ID)
-    }
 }

@@ -24,6 +24,7 @@ import java.util.Calendar
 class MidnightResetReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        val pendingResult = goAsync()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         scope.launch {
             try {
@@ -45,6 +46,8 @@ class MidnightResetReceiver : BroadcastReceiver() {
                     0,
                     2000
                 )
+            } finally {
+                pendingResult.finish()
             }
         }
 
@@ -75,18 +78,14 @@ class MidnightResetReceiver : BroadcastReceiver() {
 
             // Su Android 12+ setExactAndAllowWhileIdle richiede il permesso SCHEDULE_EXACT_ALARM
             // che l'utente deve concedere esplicitamente. Se non disponibile, fallback a inesatto.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    midnight.timeInMillis,
-                    pendingIntent
-                )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (alarmManager.canScheduleExactAlarms()) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
+                } else {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
+                }
             } else {
-                alarmManager.setAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    midnight.timeInMillis,
-                    pendingIntent
-                )
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, midnight.timeInMillis, pendingIntent)
             }
         }
     }

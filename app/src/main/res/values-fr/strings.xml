@@ -157,6 +157,12 @@
     <!-- ==================== NOTIFICATION ==================== -->
     <string name="notification_title">Objectif d\'hydratation</string>
 
+    <!-- Reminder notifications -->
+    <string name="reminder_11">Hé ! Ta méduse est un peu triste ce matin… tu as bu quelque chose ? 💧</string>
+    <string name="reminder_14">Déjeuner terminé ? Super ! C\'est au tour de ta méduse — elle a besoin d\'une recharge ! 🌊</string>
+    <string name="reminder_17">Coup de blues de 17h ? Ta méduse t\'encourage ! 🪼</string>
+    <string name="reminder_21">Dernier appel ! As-tu déjà atteint ton objectif ? 🌙</string>
+
     <!-- ==================== SHOP SCREEN ==================== -->
     <string name="shop_title">Boutique</string>
     <string name="shop_back">Retour</string>
