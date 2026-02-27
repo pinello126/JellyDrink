@@ -519,7 +519,7 @@ class WaterRepository @Inject constructor(
                 }
             }
             "afternoon_goal" -> {
-                if (currentTotal >= goal && now.isBefore(LocalTime.of(15, 0))) {
+                if (currentTotal >= goal && now.isBefore(LocalTime.of(21, 0))) {
                     progress = 1
                     completed = true
                 }
