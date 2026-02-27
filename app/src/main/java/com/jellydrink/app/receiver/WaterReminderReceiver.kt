@@ -39,15 +39,11 @@ class WaterReminderReceiver : BroadcastReceiver() {
                     .fromApplication(appContext, ReminderEntryPoint::class.java)
                     .waterRepository()
 
-                if (!repository.getNotificationsEnabled().first()) {
-                    return@launch
-                }
+                if (!repository.getNotificationsEnabled().first()) return@launch
 
                 val currentMl = repository.getTodayTotal().first()
                 val goal = repository.getDailyGoal().first()
-                if (currentMl >= goal) {
-                    return@launch
-                }
+                if (currentMl >= goal) return@launch
 
                 val glasses = repository.getCustomGlasses().first()
                 showNotification(appContext, hour, glasses)
