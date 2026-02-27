@@ -157,6 +157,12 @@
     <!-- ==================== NOTIFICATION ==================== -->
     <string name="notification_title">Obiettivo Idratazione</string>
 
+    <!-- Reminder notifications -->
+    <string name="reminder_11">Ehi! La tua medusa è un po\' triste stamattina... hai bevuto qualcosa? 💧</string>
+    <string name="reminder_14">Pranzo fatto? Bene! Ora tocca alla tua medusa — le serve una ricarica! 🌊</string>
+    <string name="reminder_17">Calo delle 17? La tua medusa fa il tifo per te! 🪼</string>
+    <string name="reminder_21">Ultima chiamata! Hai già raggiunto il tuo obiettivo? 🌙</string>
+
     <!-- ==================== SHOP SCREEN ==================== -->
     <string name="shop_title">Negozio</string>
     <string name="shop_back">Indietro</string>

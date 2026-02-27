@@ -1,10 +1,15 @@
 package com.jellydrink.app
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,8 +23,8 @@ import com.jellydrink.app.notification.WaterNotificationHelper
 import com.jellydrink.app.ui.navigation.JellyDrinkNavGraph
 import com.jellydrink.app.ui.theme.JellyDrinkTheme
 import com.jellydrink.app.receiver.MidnightResetReceiver
+import com.jellydrink.app.receiver.ReminderScheduler
 import com.jellydrink.app.worker.StreakDangerWorker
-import com.jellydrink.app.worker.WaterReminderWorker
 import com.jellydrink.app.util.LanguagePreference
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -90,17 +95,6 @@ class MainActivity : ComponentActivity() {
     private fun scheduleNotificationWorkers() {
         val workManager = WorkManager.getInstance(applicationContext)
 
-        // Water reminder every 2 hours
-        val reminderRequest = PeriodicWorkRequestBuilder<WaterReminderWorker>(
-            2, TimeUnit.HOURS
-        ).build()
-
-        workManager.enqueueUniquePeriodicWork(
-            "water_reminder",
-            ExistingPeriodicWorkPolicy.KEEP,
-            reminderRequest
-        )
-
         // Streak danger check - schedule for 21:00
         val currentTime = Calendar.getInstance()
         val targetTime = Calendar.getInstance().apply {
@@ -127,6 +121,33 @@ class MainActivity : ComponentActivity() {
 
         // Midnight reset - usa AlarmManager per esecuzione precisa a mezzanotte
         MidnightResetReceiver.scheduleMidnightAlarm(applicationContext)
+
+        // Richiedi permesso exact alarm su Android 12+ se non concesso
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            }
+        }
+
+        // Richiedi esclusione da ottimizzazione batteria se non già concessa
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                data = Uri.parse("package:$packageName")
+            }
+            startActivity(intent)
+        }
+
+        // Reminder giornalieri (11, 14, 17, 21) se notifiche abilitate
+        scope.launch {
+            if (waterRepository.getNotificationsEnabled().first()) {
+                ReminderScheduler.scheduleAll(applicationContext)
+            }
+        }
     }
 
     private fun initializeWaterProgressNotification() {

@@ -1,9 +1,12 @@
 package com.jellydrink.app.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.receiver.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +24,8 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val repository: WaterRepository
+    private val repository: WaterRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -66,6 +70,8 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             repository.setNotificationsEnabled(enabled)
             _uiState.value = _uiState.value.copy(notificationsEnabled = enabled)
+            if (enabled) ReminderScheduler.scheduleAll(context)
+            else ReminderScheduler.cancelAll(context)
         }
     }
 
