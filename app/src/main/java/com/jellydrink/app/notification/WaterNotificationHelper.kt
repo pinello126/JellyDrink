@@ -54,7 +54,7 @@ object WaterNotificationHelper {
         createNotificationChannel(context)
 
         val percentage = if (goalMl > 0) {
-            (currentMl.toFloat() / goalMl * 100).toInt().coerceIn(0, 100)
+            (currentMl.toFloat() / goalMl * 100).toInt().coerceAtLeast(0)
         } else {
             0
         }
