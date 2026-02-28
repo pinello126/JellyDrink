@@ -142,7 +142,10 @@ class MainActivity : ComponentActivity() {
             startActivity(intent)
         }
 
-        // Reminder giornalieri (11, 14, 17, 21) se notifiche abilitate
+    }
+
+    override fun onResume() {
+        super.onResume()
         scope.launch {
             if (waterRepository.getNotificationsEnabled().first()) {
                 ReminderScheduler.scheduleAll(applicationContext)
