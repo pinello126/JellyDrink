@@ -95,7 +95,6 @@ fun HomeScreen(
     val newBadge by viewModel.newBadge.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-
     // State for water FAB expansion
     var waterMenuExpanded by remember { mutableStateOf(false) }
 
@@ -191,7 +190,7 @@ fun HomeScreen(
                 challenge = uiState.todayChallenge
             )
 
-            // Medusa + barra progresso verticale affiancata - ORA OCCUPA TUTTO LO SPAZIO!
+            // Medusa + barra progresso verticale affiancata
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -214,7 +213,7 @@ fun HomeScreen(
                 )
             }
 
-            // Streak info compatto in basso (opzionale, molto piccolo)
+            // Streak info compatto in basso
             if (uiState.streak > 0) {
                 Text(
                     text = stringResource(R.string.streak_days, uiState.streak),
@@ -226,7 +225,7 @@ fun HomeScreen(
             }
         }
 
-        // FAB for Shop (top)
+        // FAB for Shop
         FloatingActionButton(
             onClick = onNavigateToShop,
             modifier = Modifier
@@ -241,7 +240,7 @@ fun HomeScreen(
             )
         }
 
-        // FAB for Water (below shop button) - NUOVO!
+        // FAB for Water
         FloatingActionButton(
             onClick = { waterMenuExpanded = !waterMenuExpanded },
             modifier = Modifier

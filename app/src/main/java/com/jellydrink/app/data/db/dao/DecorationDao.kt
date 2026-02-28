@@ -21,7 +21,7 @@ interface DecorationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(decoration: DecorationEntity)
 
-    @Query("UPDATE decorations SET owned = 1 WHERE id = :id")
+    @Query("UPDATE decorations SET owned = 1, placed = 1 WHERE id = :id")
     suspend fun purchase(id: String)
 
     @Query("UPDATE decorations SET placed = :placed WHERE id = :id")
