@@ -158,7 +158,7 @@
     <string name="notification_title">Objetivo de hidratación</string>
 
     <!-- Reminder notifications -->
-    <string name="reminder_11">¡Eh! Tu medusa está un poco triste esta mañana... ¿has bebido algo? 💧</string>
+    <string name="reminder_11">¡Hey, buenos días! Tu medusa te espera: recuerda hidratarte a media mañana. 💧</string>
     <string name="reminder_14">¿Almuerzo listo? ¡Genial! Ahora le toca a tu medusa: ¡necesita una recarga! 🌊</string>
     <string name="reminder_17">¿Bajón de las 5? ¡Tu medusa te anima! 🪼</string>
     <string name="reminder_21">¡Última llamada! ¿Ya has alcanzado tu objetivo? 🌙</string>

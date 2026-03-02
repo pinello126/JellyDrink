@@ -16,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,25 +83,42 @@ fun WaterProgressBar(
             if (animatedProgress > 0f) {
                 val fillH = barH * animatedProgress
                 val fillTop = barH - fillH
+                // Angoli superiori: arrotondati solo se il riempimento raggiunge la cima
+                val topCorner = if (animatedProgress >= 1f) cr else CornerRadius.Zero
 
-                drawRoundRect(
-                    color = if (isComplete) Color.White else Color.White.copy(alpha = 0.85f),
-                    topLeft = Offset(0f, fillTop),
-                    size = Size(barW, fillH),
-                    cornerRadius = cr
+                val fillPath = Path().apply {
+                    addRoundRect(
+                        RoundRect(
+                            left = 0f, top = fillTop, right = barW, bottom = barH,
+                            topLeftCornerRadius = topCorner,
+                            topRightCornerRadius = topCorner,
+                            bottomLeftCornerRadius = cr,
+                            bottomRightCornerRadius = cr
+                        )
+                    )
+                }
+                drawPath(
+                    fillPath,
+                    color = if (isComplete) Color.White else Color.White.copy(alpha = 0.85f)
                 )
 
                 // Riflesso luminoso laterale
-                drawRoundRect(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.35f),
-                            Color.Transparent
+                val reflectPath = Path().apply {
+                    addRoundRect(
+                        RoundRect(
+                            left = 0f, top = fillTop, right = barW * 0.45f, bottom = barH,
+                            topLeftCornerRadius = topCorner,
+                            topRightCornerRadius = CornerRadius.Zero,
+                            bottomLeftCornerRadius = cr,
+                            bottomRightCornerRadius = CornerRadius.Zero
                         )
-                    ),
-                    topLeft = Offset(0f, fillTop),
-                    size = Size(barW * 0.45f, fillH),
-                    cornerRadius = cr
+                    )
+                }
+                drawPath(
+                    reflectPath,
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(Color.White.copy(alpha = 0.35f), Color.Transparent)
+                    )
                 )
             }
         }
