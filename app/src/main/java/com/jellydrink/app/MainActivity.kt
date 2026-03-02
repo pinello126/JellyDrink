@@ -122,10 +122,15 @@ class MainActivity : ComponentActivity() {
         // Midnight reset - usa AlarmManager per esecuzione precisa a mezzanotte
         MidnightResetReceiver.scheduleMidnightAlarm(applicationContext)
 
-        // Richiedi permesso exact alarm su Android 12+ se non concesso
+        val prefs = getSharedPreferences("permission_prefs", Context.MODE_PRIVATE)
+
+        // Richiedi permesso exact alarm su Android 12+ se non concesso e non già chiesto
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
+            if (!alarmManager.canScheduleExactAlarms() &&
+                !prefs.getBoolean("asked_exact_alarm", false)
+            ) {
+                prefs.edit().putBoolean("asked_exact_alarm", true).apply()
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
                     data = Uri.parse("package:$packageName")
                 }
@@ -133,9 +138,12 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Richiedi esclusione da ottimizzazione batteria se non già concessa
+        // Richiedi esclusione da ottimizzazione batteria se non già concessa e non già chiesto
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName) &&
+            !prefs.getBoolean("asked_battery_optimization", false)
+        ) {
+            prefs.edit().putBoolean("asked_battery_optimization", true).apply()
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                 data = Uri.parse("package:$packageName")
             }

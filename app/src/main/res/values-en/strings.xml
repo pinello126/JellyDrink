@@ -158,7 +158,7 @@
     <string name="notification_title">Hydration Goal</string>
 
     <!-- Reminder notifications -->
-    <string name="reminder_11">Hey! Your jellyfish is a little sad this morning... had anything to drink? 💧</string>
+    <string name="reminder_11">Hey, good morning! Your jellyfish is waiting for you: remember to hydrate mid-morning. 💧</string>
     <string name="reminder_14">Lunch done? Great! Now it\'s your jellyfish\'s turn: she needs a recharge! 🌊</string>
     <string name="reminder_17">3pm slump? Your jellyfish is cheering for you! 🪼</string>
     <string name="reminder_21">Last call! Have you already reached your goal? 🌙</string>
