@@ -47,6 +47,13 @@ class HomeViewModel @Inject constructor(
     private val _newBadge = MutableStateFlow<BadgeEntity?>(null)
     val newBadge: StateFlow<BadgeEntity?> = _newBadge.asStateFlow()
 
+    private val _showCamelWarning = MutableStateFlow(false)
+    val showCamelWarning: StateFlow<Boolean> = _showCamelWarning.asStateFlow()
+
+    companion object {
+        const val DAILY_LIMIT_ML = 10_000
+    }
+
     val uiState: StateFlow<HomeUiState> = combine(
         repository.getTodayTotal(),
         repository.getDailyGoal(),
@@ -95,12 +102,18 @@ class HomeViewModel @Inject constructor(
 
     fun addWater(amountMl: Int) {
         viewModelScope.launch {
+            val currentTotal = repository.getTodayTotal().first()
+            if (currentTotal + amountMl > DAILY_LIMIT_ML) {
+                _showCamelWarning.value = true
+                return@launch
+            }
+
             repository.addWaterIntake(amountMl)
 
             // Check badge after adding water
-            val currentTotal = repository.getTodayTotal().first()
+            val newTotal = repository.getTodayTotal().first()
             val goal = repository.getDailyGoal().first()
-            val badge = repository.checkAndAwardBadges(currentTotal, goal)
+            val badge = repository.checkAndAwardBadges(newTotal, goal)
             if (badge != null) {
                 _newBadge.value = badge
             }
@@ -109,5 +122,9 @@ class HomeViewModel @Inject constructor(
 
     fun dismissBadge() {
         _newBadge.value = null
+    }
+
+    fun dismissCamelWarning() {
+        _showCamelWarning.value = false
     }
 }

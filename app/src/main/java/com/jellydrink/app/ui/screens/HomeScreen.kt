@@ -93,6 +93,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val newBadge by viewModel.newBadge.collectAsStateWithLifecycle()
+    val showCamelWarning by viewModel.showCamelWarning.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     // State for water FAB expansion
@@ -311,7 +312,7 @@ fun HomeScreen(
         }
 
         // Overlay scuro durante popup
-        if (newBadge != null) {
+        if (newBadge != null || showCamelWarning) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -337,6 +338,16 @@ fun HomeScreen(
                     onDismiss = { viewModel.dismissBadge() }
                 )
             }
+        }
+
+        // Popup limite giornaliero cammello
+        AnimatedVisibility(
+            visible = showCamelWarning,
+            enter = scaleIn(initialScale = 0.85f) + fadeIn(),
+            exit = scaleOut(targetScale = 0.85f) + fadeOut(),
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            CamelWarningPopup(onDismiss = { viewModel.dismissCamelWarning() })
         }
     }
 }
@@ -440,6 +451,90 @@ private fun BadgePopupCard(
     }
 }
 
+
+
+@Composable
+private fun CamelWarningPopup(onDismiss: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 28.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A2E)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Header azzurro-oceano
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFF0D5B7A),
+                                Color(0xFF1FA8D4),
+                                Color(0xFF00BCD4),
+                                Color(0xFF0D5B7A)
+                            )
+                        ),
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+                    )
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.camel_warning_header),
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.5.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Text(
+                text = "🐪",
+                fontSize = 64.sp
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = stringResource(R.string.camel_warning_message),
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 28.dp)
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF00BCD4),
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.camel_warning_dismiss),
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
 
 
 // ═══════════════════════════════════════════════════════════════
