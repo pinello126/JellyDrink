@@ -18,6 +18,11 @@
     <string name="badge_unlocked_header">✦  BADGE DÉBLOQUÉ  ✦</string>
     <string name="badge_unlocked_dismiss">Tu t\'envoles!</string>
 
+    <!-- ==================== CAMEL WARNING ==================== -->
+    <string name="camel_warning_header">🐪  LIMITE QUOTIDIENNE  🐪</string>
+    <string name="camel_warning_message">Hey, on dirait que tu as bu comme un chameau — ça suffit pour aujourd\'hui !</string>
+    <string name="camel_warning_dismiss">Ok, ok…</string>
+
     <!-- ==================== CHALLENGE CARD ==================== -->
     <string name="challenge_label">Défi du jour</string>
     <string name="challenge_default_description">Défi quotidien</string>

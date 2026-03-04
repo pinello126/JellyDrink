@@ -18,6 +18,11 @@
     <string name="badge_unlocked_header">✦  INSIGNIA DESBLOQUEADA  ✦</string>
     <string name="badge_unlocked_dismiss">¡Estás volando!</string>
 
+    <!-- ==================== CAMEL WARNING ==================== -->
+    <string name="camel_warning_header">🐪  LÍMITE DIARIO  🐪</string>
+    <string name="camel_warning_message">¡Hey, parece que has bebido como un camello, ya es suficiente por hoy!</string>
+    <string name="camel_warning_dismiss">Ok, ok…</string>
+
     <!-- ==================== CHALLENGE CARD ==================== -->
     <string name="challenge_label">Reto del día</string>
     <string name="challenge_default_description">Reto diario</string>
