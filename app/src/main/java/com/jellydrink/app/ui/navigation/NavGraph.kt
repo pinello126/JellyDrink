@@ -1,5 +1,6 @@
 package com.jellydrink.app.ui.navigation
 
+import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -18,8 +19,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.jellydrink.app.R
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -31,6 +34,7 @@ import androidx.navigation.compose.rememberNavController
 import com.jellydrink.app.ui.screens.BadgesScreen
 import com.jellydrink.app.ui.screens.HistoryScreen
 import com.jellydrink.app.ui.screens.HomeScreen
+import com.jellydrink.app.ui.screens.OnboardingScreen
 import com.jellydrink.app.ui.screens.ProfileSettingsScreen
 import com.jellydrink.app.ui.screens.ShopScreen
 
@@ -49,12 +53,20 @@ sealed class Screen(
 // Additional routes (not in bottom nav)
 object Routes {
     const val SHOP = "shop"
+    const val ONBOARDING = "onboarding"
 }
 
 val screens = listOf(Screen.Home, Screen.Profile, Screen.History, Screen.Badges)
 
 @Composable
 fun JellyDrinkNavGraph() {
+    val context = LocalContext.current
+    val onboardingCompleted = remember {
+        context.getSharedPreferences("onboarding_prefs", Context.MODE_PRIVATE)
+            .getBoolean("completed", false)
+    }
+    val startDestination = if (onboardingCompleted) Screen.Home.route else Routes.ONBOARDING
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -99,9 +111,18 @@ fun JellyDrinkNavGraph() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Routes.ONBOARDING) {
+                OnboardingScreen(
+                    onComplete = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToShop = {

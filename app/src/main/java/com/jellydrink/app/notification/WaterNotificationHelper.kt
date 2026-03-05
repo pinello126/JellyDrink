@@ -9,6 +9,7 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.jellydrink.app.MainActivity
 import com.jellydrink.app.R
+import com.jellydrink.app.util.LanguagePreference
 
 object WaterNotificationHelper {
 
@@ -31,12 +32,15 @@ object WaterNotificationHelper {
      * Crea il canale di notifica (necessario per Android 8.0+)
      */
     fun createNotificationChannel(context: Context) {
+        val tag = LanguagePreference.getStoredTag(context)
+        val localizedContext = if (tag.isNotEmpty()) LanguagePreference.applyLocale(context, tag) else context
+
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Progresso Idratazione",
+            localizedContext.getString(R.string.channel_name_progress),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Mostra il progresso dell'obiettivo giornaliero di acqua"
+            description = localizedContext.getString(R.string.channel_desc_progress)
             setShowBadge(false)
         }
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -70,8 +74,13 @@ object WaterNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Applica la lingua scelta dall'utente (RemoteViews usa la lingua di sistema)
+        val tag = LanguagePreference.getStoredTag(context)
+        val localizedContext = if (tag.isNotEmpty()) LanguagePreference.applyLocale(context, tag) else context
+
         // Layout personalizzato per la notifica
         val notificationLayout = RemoteViews(context.packageName, R.layout.notification_water_progress).apply {
+            setTextViewText(R.id.notification_title, localizedContext.getString(R.string.notification_title))
             setTextViewText(R.id.notification_percentage, "$percentage%")
             setTextViewText(R.id.notification_text, "${mlToLitersFormatted(currentMl)} / ${mlToLitersFormatted(goalMl)} L")
         }

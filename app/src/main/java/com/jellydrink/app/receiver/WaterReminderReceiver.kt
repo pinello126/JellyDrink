@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import com.jellydrink.app.MainActivity
 import com.jellydrink.app.R
 import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.util.LanguagePreference
 import com.jellydrink.app.util.NotificationHelper
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -64,12 +65,16 @@ class WaterReminderReceiver : BroadcastReceiver() {
     private fun showNotification(context: Context, hour: Int, glasses: List<Int>) {
         NotificationHelper.createNotificationChannel(context)
 
+        // Applica la lingua scelta dall'utente nell'app (il context del receiver usa la lingua di sistema)
+        val tag = LanguagePreference.getStoredTag(context)
+        val localizedContext = if (tag.isNotEmpty()) LanguagePreference.applyLocale(context, tag) else context
+
         val message = when (hour) {
-            11 -> context.getString(R.string.reminder_11)
-            14 -> context.getString(R.string.reminder_14)
-            17 -> context.getString(R.string.reminder_17)
-            21 -> context.getString(R.string.reminder_21)
-            else -> context.getString(R.string.reminder_11)
+            11 -> localizedContext.getString(R.string.reminder_11)
+            14 -> localizedContext.getString(R.string.reminder_14)
+            17 -> localizedContext.getString(R.string.reminder_17)
+            21 -> localizedContext.getString(R.string.reminder_21)
+            else -> localizedContext.getString(R.string.reminder_11)
         }
 
         val notifId = 2000 + hour
@@ -85,7 +90,7 @@ class WaterReminderReceiver : BroadcastReceiver() {
 
         val builder = NotificationCompat.Builder(context, NotificationHelper.CHANNEL_ID_REMINDERS)
             .setSmallIcon(R.drawable.ic_notification_jellyfish)
-            .setContentTitle(context.getString(R.string.app_name))
+            .setContentTitle(localizedContext.getString(R.string.app_name))
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
             .setContentIntent(openIntent)
