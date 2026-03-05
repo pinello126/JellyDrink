@@ -46,12 +46,7 @@ class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            scheduleNotificationWorkers()
-            initializeWaterProgressNotification()
-        }
-    }
+    ) { _ -> /* workers già schedulati in onCreate */ }
 
     override fun attachBaseContext(newBase: Context) {
         val tag = LanguagePreference.getStoredTag(newBase)
@@ -66,24 +61,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Request notification permission on Android 13+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    scheduleNotificationWorkers()
-                    initializeWaterProgressNotification()
-                }
-                else -> {
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        } else {
-            scheduleNotificationWorkers()
-            initializeWaterProgressNotification()
-        }
+        // Schedula worker e allarmi sempre, senza popup permessi
+        scheduleNotificationWorkers()
+        initializeWaterProgressNotification()
 
         setContent {
             JellyDrinkTheme {
@@ -154,6 +134,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        // POST_NOTIFICATIONS (Android 13+) — una sola volta
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permPrefs = getSharedPreferences("permission_prefs", Context.MODE_PRIVATE)
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED &&
+                !permPrefs.getBoolean("asked_post_notifications", false)
+            ) {
+                permPrefs.edit().putBoolean("asked_post_notifications", true).apply()
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        // Exact alarm + batteria (gestiti dai flag interni a scheduleNotificationWorkers)
+        scheduleNotificationWorkers()
+
         scope.launch {
             if (waterRepository.getNotificationsEnabled().first()) {
                 ReminderScheduler.scheduleAll(applicationContext)

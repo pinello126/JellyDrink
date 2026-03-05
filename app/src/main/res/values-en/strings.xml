@@ -18,6 +18,20 @@
     <string name="badge_unlocked_header">✦  BADGE UNLOCKED  ✦</string>
     <string name="badge_unlocked_dismiss">You\'re flying!</string>
 
+    <!-- ==================== ONBOARDING ==================== -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_start">Let\'s go!</string>
+
+    <string name="onboarding_title_1">Welcome to JellyDrink!</string>
+    <string name="onboarding_desc_1">Hi, I\'m a friendly jellyfish, I keep track of how much water you drink every day.</string>
+
+    <string name="onboarding_title_2">Log a sip</string>
+    <string name="onboarding_desc_2">To monitor how much water you\'re drinking throughout your day, you can use the 💧 button.</string>
+
+    <string name="onboarding_title_3">Badges, XP &amp; challenges</string>
+    <string name="onboarding_desc_3">Complete daily challenges, unlock badges and earn XP to decorate your personal aquarium.</string>
+
     <!-- ==================== CAMEL WARNING ==================== -->
     <string name="camel_warning_header">🐪  DAILY LIMIT  🐪</string>
     <string name="camel_warning_message">Hey, looks like you\'ve been drinking like a camel — that\'s enough for today!</string>
@@ -161,6 +175,10 @@
 
     <!-- ==================== NOTIFICATION ==================== -->
     <string name="notification_title">Hydration Goal</string>
+    <string name="channel_name_reminders">Water Reminders</string>
+    <string name="channel_desc_reminders">Reminders to drink water</string>
+    <string name="channel_name_progress">Hydration Progress</string>
+    <string name="channel_desc_progress">Shows daily hydration goal progress</string>
 
     <!-- Reminder notifications -->
     <string name="reminder_11">Hey, good morning! Your jellyfish is waiting for you: remember to hydrate mid-morning. 💧</string>

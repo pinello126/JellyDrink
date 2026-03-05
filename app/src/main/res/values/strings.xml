@@ -18,6 +18,20 @@
     <string name="badge_unlocked_header">✦  BADGE SBLOCCATO  ✦</string>
     <string name="badge_unlocked_dismiss">Stai volando!</string>
 
+    <!-- ==================== ONBOARDING ==================== -->
+    <string name="onboarding_skip">Salta</string>
+    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_start">Inizia!</string>
+
+    <string name="onboarding_title_1">Benvenuto in JellyDrink!</string>
+    <string name="onboarding_desc_1">Ciao, sono una simpatica medusa, tengo conto di quanta acqua bevi quotidianamente.</string>
+
+    <string name="onboarding_title_2">Aggiungi un sorso</string>
+    <string name="onboarding_desc_2">Per monitorare quanta acqua stai bevendo nella tua giornata puoi utilizzare il tasto 💧</string>
+
+    <string name="onboarding_title_3">Badge, XP e sfide</string>
+    <string name="onboarding_desc_3">Completa le sfide giornaliere, sblocca badge e accumula XP per decorare il tuo acquario personale.</string>
+
     <!-- ==================== CAMEL WARNING ==================== -->
     <string name="camel_warning_header">🐪  LIMITE GIORNALIERO  🐪</string>
     <string name="camel_warning_message">Hey, sembra che tu abbia bevuto come un cammello, per oggi basta dai.</string>
@@ -161,6 +175,10 @@
 
     <!-- ==================== NOTIFICATION ==================== -->
     <string name="notification_title">Obiettivo Idratazione</string>
+    <string name="channel_name_reminders">Promemoria Acqua</string>
+    <string name="channel_desc_reminders">Promemoria per bere acqua</string>
+    <string name="channel_name_progress">Progresso Idratazione</string>
+    <string name="channel_desc_progress">Mostra il progresso dell\'obiettivo giornaliero di acqua</string>
 
     <!-- Reminder notifications -->
     <string name="reminder_11">Hey, buongiorno! La tua medusa ti aspetta: ricordati di idratarti a metà mattina. 💧</string>

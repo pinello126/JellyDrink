@@ -32,7 +32,8 @@ import kotlin.math.sin
 @Composable
 fun JellyFishView(
     fillPercentage: Float,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isStatic: Boolean = false
 ) {
     val palette = PaletteRosa
     val fill by animateFloatAsState(
@@ -102,7 +103,7 @@ fun JellyFishView(
     }
 
     Canvas(
-        modifier = modifier
+        modifier = if (isStatic) modifier else modifier
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
@@ -169,11 +170,13 @@ fun JellyFishView(
         }
 
         val ref = min(w, h)
-        val bw = ref * 0.22f * breathe * scale
+        val bw = ref * 0.22f * (if (isStatic) 1.0f else breathe) * scale
         val bh = bw * 1.18f
 
         // Position logic con compensazione smooth del drift
-        val cx = if (isDragging) {
+        val cx = if (isStatic) {
+            w * 0.5f
+        } else if (isDragging) {
             dragPosition.x
         } else if (releasePosition != null) {
             releasePosition!!.x - releaseDrift.x + currentDriftX
@@ -181,7 +184,9 @@ fun JellyFishView(
             w * (0.5f + driftX1 + driftX2 + driftX3)
         }
 
-        val baseY = if (isDragging) {
+        val baseY = if (isStatic) {
+            h * 0.5f
+        } else if (isDragging) {
             dragPosition.y
         } else if (releasePosition != null) {
             releasePosition!!.y - releaseDrift.y + currentDriftY
@@ -218,7 +223,7 @@ fun JellyFishView(
         // ══════════════════════════════════════════
         //  OUTER GLOW SHELL — alone esterno (palette based)
         // ══════════════════════════════════════════
-        val bodyPath = buildBellPath(cx, bodyTop, bodyBot, bw, scallopPhase)
+        val bodyPath = buildBellPath(cx, bodyTop, bodyBot, bw, if (isStatic) 0f else scallopPhase)
         drawPath(
             path = bodyPath,
             brush = Brush.radialGradient(
@@ -369,7 +374,7 @@ fun JellyFishView(
             style = Stroke(2.2f, cap = StrokeCap.Round, join = StrokeJoin.Round))
 
         // Highlight bordo smerlato inferiore
-        val scallopHL = buildScallopHighlight(cx, bodyBot, bw, scallopPhase)
+        val scallopHL = buildScallopHighlight(cx, bodyBot, bw, if (isStatic) 0f else scallopPhase)
         drawPath(scallopHL, ScallopHL.copy(alpha = 0.35f),
             style = Stroke(1.5f, cap = StrokeCap.Round))
 

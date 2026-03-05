@@ -3,18 +3,22 @@ package com.jellydrink.app.util
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import com.jellydrink.app.R
+import com.jellydrink.app.util.LanguagePreference
 
 object NotificationHelper {
     const val CHANNEL_ID_REMINDERS = "water_reminders"
-    private const val CHANNEL_NAME_REMINDERS = "Promemoria Acqua"
 
     fun createNotificationChannel(context: Context) {
+        val tag = LanguagePreference.getStoredTag(context)
+        val localizedContext = if (tag.isNotEmpty()) LanguagePreference.applyLocale(context, tag) else context
+
         val channel = NotificationChannel(
             CHANNEL_ID_REMINDERS,
-            CHANNEL_NAME_REMINDERS,
+            localizedContext.getString(R.string.channel_name_reminders),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
-            description = "Promemoria per bere acqua"
+            description = localizedContext.getString(R.string.channel_desc_reminders)
             enableVibration(true)
         }
 
