@@ -24,7 +24,6 @@ data class HomeUiState(
     val glasses: List<Int> = listOf(200, 500, 1000),
     val streak: Int = 0,
     val badges: List<BadgeEntity> = emptyList(),
-    val newBadge: BadgeEntity? = null,
     // XP and Level
     val xp: Int = 0,
     val level: Int = 1,
@@ -97,6 +96,17 @@ class HomeViewModel @Inject constructor(
             // Update streak
             val goal = repository.getDailyGoal().first()
             repository.calculateStreak(goal)
+        }
+    }
+
+    fun checkPendingBadge() {
+        viewModelScope.launch {
+            val pendingType = repository.getPendingBadgeType()
+            if (pendingType != null) {
+                val badge = repository.getBadgeByType(pendingType)
+                if (badge != null) _newBadge.value = badge
+                repository.clearPendingBadge()
+            }
         }
     }
 

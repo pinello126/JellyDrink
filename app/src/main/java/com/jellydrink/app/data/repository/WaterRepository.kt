@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.jellydrink.app.data.db.dao.BadgeDao
@@ -55,6 +56,7 @@ class WaterRepository @Inject constructor(
         private val DAILY_GOAL_KEY = intPreferencesKey("daily_goal")
         private val CUSTOM_GLASSES_KEY = stringSetPreferencesKey("custom_glasses")
         private val NOTIFICATIONS_ENABLED_KEY = booleanPreferencesKey("notifications_enabled")
+        private val PENDING_BADGE_KEY = stringPreferencesKey("pending_badge_type")
         const val DEFAULT_GOAL = 2000
         val DEFAULT_GLASSES = listOf(200, 500, 1000)
 
@@ -370,10 +372,12 @@ class WaterRepository @Inject constructor(
         JellyfishWidget.updateAllWidgets(context)
 
         // Update lock screen notification
+        val glasses = getCustomGlasses().first()
         com.jellydrink.app.notification.WaterNotificationHelper.showWaterProgressNotification(
             context,
             currentTotal,
-            goal
+            goal,
+            glasses
         )
     }
 
@@ -446,6 +450,22 @@ class WaterRepository @Inject constructor(
             prefs[NOTIFICATIONS_ENABLED_KEY] = enabled
         }
     }
+
+    // --- Badge pendente (assegnato da notifica, da mostrare alla riapertura della home) ---
+
+    suspend fun getPendingBadgeType(): String? =
+        context.dataStore.data.map { it[PENDING_BADGE_KEY] }.first()
+
+    suspend fun setPendingBadge(type: String) {
+        context.dataStore.edit { it[PENDING_BADGE_KEY] = type }
+    }
+
+    suspend fun clearPendingBadge() {
+        context.dataStore.edit { it.remove(PENDING_BADGE_KEY) }
+    }
+
+    suspend fun getBadgeByType(type: String): BadgeEntity? =
+        badgeDao.getAllBadges().first().find { it.type == type }
 
     // --- Streak ---
 

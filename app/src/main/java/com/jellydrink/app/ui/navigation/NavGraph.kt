@@ -19,7 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -61,13 +61,14 @@ val screens = listOf(Screen.Home, Screen.Profile, Screen.History, Screen.Badges)
 @Composable
 fun JellyDrinkNavGraph() {
     val context = LocalContext.current
-    val onboardingCompleted = remember {
+    val navController = rememberNavController()
+
+    val onboardingCompleted = rememberSaveable {
         context.getSharedPreferences("onboarding_prefs", Context.MODE_PRIVATE)
             .getBoolean("completed", false)
     }
     val startDestination = if (onboardingCompleted) Screen.Home.route else Routes.ONBOARDING
 
-    val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
