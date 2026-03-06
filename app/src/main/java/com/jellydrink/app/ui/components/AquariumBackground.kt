@@ -310,20 +310,27 @@ fun AquariumBackground(
                 // FISH - Movimento ultra-fluido con 5 fasi lente (67-127 secondi)
                 "fish_blue", "fish_orange" -> {
                     // Pesci — nuoto prevalentemente orizzontale, realistico
+                    // Usa phase offset fisso per ID (non per indice lista) per garantire
+                    // posizione iniziale sempre visibile e traiettoria stabile per ogni pesce
+                    val fishPhaseOffset = when (deco.id) {
+                        "fish_blue" -> 0f
+                        "fish_orange" -> 1.5f
+                        else -> phaseOffset
+                    }
 
                     // ORIZZONTALE — ampiezza grande, il pesce attraversa lo schermo
-                    val driftX1 = sin(fishPhase1 + phaseOffset) * 0.32f
-                    val driftX2 = sin(fishPhase2 + phaseOffset * 1.618f) * 0.20f
-                    val driftX3 = cos(fishPhase3 + phaseOffset * 2.414f) * 0.12f
-                    val driftX4 = sin(fishPhase4 + phaseOffset * 1.732f) * 0.08f
+                    val driftX1 = sin(fishPhase1 + fishPhaseOffset) * 0.32f
+                    val driftX2 = sin(fishPhase2 + fishPhaseOffset * 1.618f) * 0.20f
+                    val driftX3 = cos(fishPhase3 + fishPhaseOffset * 2.414f) * 0.12f
+                    val driftX4 = sin(fishPhase4 + fishPhaseOffset * 1.732f) * 0.08f
 
                     // VERTICALE — ampiezza ridotta, i pesci non salgono/scendono molto
-                    val driftY1 = cos(fishPhase2 + phaseOffset * 1.414f) * 0.08f
-                    val driftY2 = cos(fishPhase3 + phaseOffset * 2.236f) * 0.05f
-                    val driftY3 = sin(fishPhase4 + phaseOffset * 1.902f) * 0.03f
+                    val driftY1 = cos(fishPhase2 + fishPhaseOffset * 1.414f) * 0.08f
+                    val driftY2 = cos(fishPhase3 + fishPhaseOffset * 2.236f) * 0.05f
+                    val driftY3 = sin(fishPhase4 + fishPhaseOffset * 1.902f) * 0.03f
 
-                    val fishCenterX = 0.20f + sin(phaseOffset) * 0.25f
-                    val fishCenterY = 0.45f + cos(phaseOffset * 1.3f) * 0.12f
+                    val fishCenterX = 0.20f + sin(fishPhaseOffset) * 0.25f
+                    val fishCenterY = 0.45f + cos(fishPhaseOffset * 1.3f) * 0.12f
 
                     val totalDriftX = driftX1 + driftX2 + driftX3 + driftX4
                     val totalDriftY = driftY1 + driftY2 + driftY3
@@ -331,13 +338,13 @@ fun AquariumBackground(
                     val fishX = w * (fishCenterX + totalDriftX)
                     val fishY = (h * (fishCenterY + totalDriftY)).coerceIn(h * 0.20f, h * 0.80f)
 
-                    // Direzione basata su velocità reale
-                    val velocityX = cos(fishPhase1 + phaseOffset)
+                    // Direzione basata sulla componente dominante del drift (fishPhaseOffset)
+                    val velocityX = cos(fishPhase1 + fishPhaseOffset)
                     val direction = if (velocityX > 0) 1f else -1f
 
                     when (deco.id) {
-                        "fish_blue" -> drawRealisticBlueFish(fishX, fishY, 40f, swimPhase, index, direction)
-                        "fish_orange" -> drawRealisticClownfish(fishX, fishY, 40f, swimPhase, index, direction)
+                        "fish_blue" -> drawRealisticBlueFish(fishX, fishY, 40f, swimPhase, 0, direction)
+                        "fish_orange" -> drawRealisticClownfish(fishX, fishY, 40f, swimPhase, 1, direction)
                     }
                 }
 

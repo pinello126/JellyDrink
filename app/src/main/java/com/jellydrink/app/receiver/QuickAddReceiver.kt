@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class QuickAddReceiver : BroadcastReceiver() {
@@ -29,9 +30,11 @@ class QuickAddReceiver : BroadcastReceiver() {
 
         val appContext = context.applicationContext
 
-        // Chiudi la notifica immediatamente
-        (appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
-            .cancel(notifId)
+        // Chiudi la notifica solo se non è la lock screen (che è persistente e si aggiorna)
+        if (notifId != com.jellydrink.app.notification.WaterNotificationHelper.NOTIFICATION_ID) {
+            (appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .cancel(notifId)
+        }
 
         val pendingResult = goAsync()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -40,8 +43,19 @@ class QuickAddReceiver : BroadcastReceiver() {
                 val repository = EntryPointAccessors
                     .fromApplication(appContext, QuickAddEntryPoint::class.java)
                     .waterRepository()
-                // Aggiunge acqua con tutta la logica (XP, badge, streak, widget, notifica)
+                // Limite 10L: non aggiungere se il totale giornaliero ha già raggiunto il massimo
+                val currentTotal = repository.getTodayTotal().first()
+                if (currentTotal >= 10000) return@launch
+                // Aggiunge acqua con tutta la logica (XP, streak, widget, notifica)
                 repository.addWaterIntake(amountMl)
+                // Controlla e assegna badge; se sbloccato, lo salva in DataStore
+                // così il popup apparirà alla prossima apertura della home
+                val newTotal = repository.getTodayTotal().first()
+                val goal = repository.getDailyGoal().first()
+                val badge = repository.checkAndAwardBadges(newTotal, goal)
+                if (badge != null) {
+                    repository.setPendingBadge(badge.type)
+                }
             } catch (e: Exception) {
                 // silently fail
             } finally {

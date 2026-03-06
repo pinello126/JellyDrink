@@ -46,7 +46,11 @@ class MainActivity : ComponentActivity() {
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _ -> /* workers già schedulati in onCreate */ }
+    ) { granted ->
+        // Se il permesso POST_NOTIFICATIONS è stato appena concesso,
+        // mostra subito la notifica lock (che era stata tentata senza permesso in onCreate)
+        if (granted) initializeWaterProgressNotification()
+    }
 
     override fun attachBaseContext(newBase: Context) {
         val tag = LanguagePreference.getStoredTag(newBase)
@@ -162,18 +166,21 @@ class MainActivity : ComponentActivity() {
             try {
                 val currentTotal = waterRepository.getTodayTotal().first()
                 val goal = waterRepository.getDailyGoal().first()
+                val glasses = waterRepository.getCustomGlasses().first()
 
                 WaterNotificationHelper.showWaterProgressNotification(
                     applicationContext,
                     currentTotal,
-                    goal
+                    goal,
+                    glasses
                 )
             } catch (e: Exception) {
                 // Fallback con valori di default
                 WaterNotificationHelper.showWaterProgressNotification(
                     applicationContext,
                     0,
-                    2000
+                    2000,
+                    WaterRepository.DEFAULT_GLASSES
                 )
             }
         }
