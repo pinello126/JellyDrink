@@ -15,12 +15,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -32,7 +33,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -241,18 +241,30 @@ fun HomeScreen(
         }
 
         // FAB for Shop
-        FloatingActionButton(
-            onClick = onNavigateToShop,
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 200.dp),
-            containerColor = Color(0xFF2196F3)
+                .padding(start = 16.dp, bottom = 200.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = stringResource(R.string.open_shop),
-                tint = Color.White
-            )
+            FloatingActionButton(
+                onClick = onNavigateToShop,
+                containerColor = Color(0xFF2196F3)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = stringResource(R.string.open_shop),
+                    tint = Color.White
+                )
+            }
+            if (uiState.hasAffordableDecorations) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .align(Alignment.TopEnd)
+                        .background(Color.Red, CircleShape)
+                        .border(1.5.dp, Color.White, CircleShape)
+                )
+            }
         }
 
         // FAB for Water

@@ -32,7 +32,9 @@ data class HomeUiState(
     // Challenge
     val todayChallenge: DailyChallengeEntity? = null,
     // Decorations
-    val placedDecorations: List<DecorationEntity> = emptyList()
+    val placedDecorations: List<DecorationEntity> = emptyList(),
+    // Shop badge
+    val hasAffordableDecorations: Boolean = false
 ) {
     val percentage: Float
         get() = if (goalMl > 0) (currentMl.toFloat() / goalMl).coerceIn(0f, 1f) else 0f
@@ -53,6 +55,7 @@ class HomeViewModel @Inject constructor(
         const val DAILY_LIMIT_ML = 10_000
     }
 
+    @Suppress("UNCHECKED_CAST")
     val uiState: StateFlow<HomeUiState> = combine(
         repository.getTodayTotal(),
         repository.getDailyGoal(),
@@ -60,7 +63,8 @@ class HomeViewModel @Inject constructor(
         repository.getAllBadges(),
         repository.getProfile(),
         repository.getTodayChallenge(),
-        repository.getPlacedDecorations()
+        repository.getPlacedDecorations(),
+        repository.getAllDecorations()
     ) { values ->
         val currentMl = values[0] as Int
         val goal = values[1] as Int
@@ -69,6 +73,10 @@ class HomeViewModel @Inject constructor(
         val profile = values[4] as? UserProfileEntity
         val challenge = values[5] as? DailyChallengeEntity
         val placedDecorations = values[6] as List<DecorationEntity>
+        val allDecorations = values[7] as List<DecorationEntity>
+
+        val spendableXp = profile?.spendableXp ?: 0
+        val hasAffordable = allDecorations.any { !it.owned && it.cost <= spendableXp }
 
         HomeUiState(
             currentMl = currentMl,
@@ -80,7 +88,8 @@ class HomeViewModel @Inject constructor(
             xpForCurrentLevel = repository.xpForLevel(profile?.level ?: 1),
             xpForNextLevel = repository.xpForNextLevel(profile?.xp ?: 0),
             todayChallenge = challenge,
-            placedDecorations = placedDecorations
+            placedDecorations = placedDecorations,
+            hasAffordableDecorations = hasAffordable
         )
     }.stateIn(
         scope = viewModelScope,
