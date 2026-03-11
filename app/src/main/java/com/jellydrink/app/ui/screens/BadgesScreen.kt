@@ -35,8 +35,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jellydrink.app.R
-import com.jellydrink.app.data.repository.WaterRepository
-import com.jellydrink.app.data.repository.WaterRepository.Companion.BADGE_CATEGORIES_ORDER
+import com.jellydrink.app.domain.logic.GameConstants
+import com.jellydrink.app.domain.logic.GameConstants.BADGE_CATEGORIES_ORDER
+import com.jellydrink.app.domain.logic.ResourceMapper
 import com.jellydrink.app.ui.components.BadgeCard
 import com.jellydrink.app.viewmodel.ProfileViewModel
 
@@ -68,7 +69,7 @@ fun BadgesScreen(
             val categoryEarned = badges.count { it.isEarned }
 
             item(key = "header_$category") {
-                val catNameRes = WaterRepository.categoryNameRes(category)
+                val catNameRes = ResourceMapper.categoryNameRes(category)
                 CategoryHeader(
                     name = if (catNameRes != 0) stringResource(catNameRes) else category,
                     earned = categoryEarned,
@@ -206,11 +207,11 @@ private fun CategoryHeader(
 }
 
 private fun categoryIcon(category: String): String = when (category) {
-    WaterRepository.CAT_PRIMI_PASSI -> "\uD83D\uDC23" // 🐣
-    WaterRepository.CAT_STREAK      -> "\uD83D\uDD25" // 🔥
-    WaterRepository.CAT_LITRI       -> "\uD83C\uDF0A" // 🌊
-    WaterRepository.CAT_GIORNI      -> "\u2600\uFE0F" // ☀️
-    WaterRepository.CAT_LIVELLI     -> "\u2B50"       // ⭐
-    WaterRepository.CAT_SFIDE       -> "\u26A1"       // ⚡
+    GameConstants.CAT_PRIMI_PASSI -> "\uD83D\uDC23" // 🐣
+    GameConstants.CAT_STREAK      -> "\uD83D\uDD25" // 🔥
+    GameConstants.CAT_LITRI       -> "\uD83C\uDF0A" // 🌊
+    GameConstants.CAT_GIORNI      -> "\u2600\uFE0F" // ☀️
+    GameConstants.CAT_LIVELLI     -> "\u2B50"       // ⭐
+    GameConstants.CAT_SFIDE       -> "\u26A1"       // ⚡
     else -> "\uD83C\uDFC5"
 }

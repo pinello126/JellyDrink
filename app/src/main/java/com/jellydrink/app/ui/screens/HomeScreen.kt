@@ -69,7 +69,8 @@ import com.jellydrink.app.ui.components.ChallengeCard
 import com.jellydrink.app.ui.components.JellyFishView
 import com.jellydrink.app.ui.components.WaterProgressBar
 import com.jellydrink.app.ui.components.XpBar
-import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.logic.BadgeDefinitions
+import com.jellydrink.app.domain.logic.ResourceMapper
 import com.jellydrink.app.ui.theme.GoldBadge
 import com.jellydrink.app.viewmodel.HomeViewModel
 import com.jellydrink.app.R
@@ -354,9 +355,9 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.Center)
         ) {
             newBadge?.let { badge ->
-                val definition = WaterRepository.ALL_BADGES.find { it.type == badge.type }
-                val nameRes = WaterRepository.badgeNameRes(badge.type)
-                val descRes = WaterRepository.badgeDescRes(badge.type)
+                val definition = BadgeDefinitions.ALL_BADGES.find { it.type == badge.type }
+                val nameRes = ResourceMapper.badgeNameRes(badge.type)
+                val descRes = ResourceMapper.badgeDescRes(badge.type)
                 BadgePopupCard(
                     category = definition?.category ?: "",
                     name = if (nameRes != 0) stringResource(nameRes) else definition?.name ?: badge.description,

@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jellydrink.app.R
-import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.logic.ResourceMapper
 import com.jellydrink.app.ui.components.DecorationPreview
 import com.jellydrink.app.data.db.entity.DecorationEntity
 import com.jellydrink.app.viewmodel.ShopViewModel
@@ -285,7 +285,7 @@ private fun DecorationCard(
 
             // Info
             Column(modifier = Modifier.weight(1f)) {
-                val nameRes = WaterRepository.decoNameRes(decoration.id)
+                val nameRes = ResourceMapper.decoNameRes(decoration.id)
                 Text(
                     text = if (nameRes != 0) stringResource(nameRes) else decoration.nameIt,
                     style = MaterialTheme.typography.titleMedium,

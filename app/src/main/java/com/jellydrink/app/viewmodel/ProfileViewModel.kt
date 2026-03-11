@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jellydrink.app.data.db.entity.UserProfileEntity
 import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.model.BadgeWithStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val profile: UserProfileEntity? = null,
-    val badges: List<WaterRepository.BadgeWithStatus> = emptyList(),
+    val badges: List<BadgeWithStatus> = emptyList(),
     val xpForCurrentLevel: Int = 0,
     val xpForNextLevel: Int = 100,
     val currentStreak: Int = 0

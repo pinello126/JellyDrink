@@ -7,6 +7,7 @@ import com.jellydrink.app.data.db.entity.DailyChallengeEntity
 import com.jellydrink.app.data.db.entity.DecorationEntity
 import com.jellydrink.app.data.db.entity.UserProfileEntity
 import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.logic.GameConstants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,7 +53,7 @@ class HomeViewModel @Inject constructor(
     val showCamelWarning: StateFlow<Boolean> = _showCamelWarning.asStateFlow()
 
     companion object {
-        const val DAILY_LIMIT_ML = 10_000
+        const val DAILY_LIMIT_ML = GameConstants.DAILY_LIMIT_ML
     }
 
     @Suppress("UNCHECKED_CAST")

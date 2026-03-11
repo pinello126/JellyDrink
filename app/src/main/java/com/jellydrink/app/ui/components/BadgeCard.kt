@@ -28,7 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jellydrink.app.R
-import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.logic.ResourceMapper
+import com.jellydrink.app.domain.model.BadgeWithStatus
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -61,7 +62,7 @@ internal fun BadgeMedalCanvas(
 
 @Composable
 fun BadgeCard(
-    badge: WaterRepository.BadgeWithStatus,
+    badge: BadgeWithStatus,
     modifier: Modifier = Modifier
 ) {
     val alpha = if (badge.isEarned) 1f else 0.4f
@@ -76,8 +77,8 @@ fun BadgeCard(
             }
         )
     ) {
-        val nameRes = WaterRepository.badgeNameRes(badge.type)
-        val descRes = WaterRepository.badgeDescRes(badge.type)
+        val nameRes = ResourceMapper.badgeNameRes(badge.type)
+        val descRes = ResourceMapper.badgeDescRes(badge.type)
         val badgeName = if (nameRes != 0) stringResource(nameRes) else badge.name
         val badgeDesc = if (descRes != 0) stringResource(descRes) else badge.description
 

@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jellydrink.app.R
 import com.jellydrink.app.data.db.entity.DailyChallengeEntity
-import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.logic.ResourceMapper
 
 // Challenge colors
 private val ChallengeOrange = Color(0xFFFF9800)
@@ -59,7 +59,7 @@ fun ChallengeCard(
 ) {
     if (challenge == null) return
 
-    val descRes = WaterRepository.challengeDescRes(challenge.type)
+    val descRes = ResourceMapper.challengeDescRes(challenge.type)
     val description = if (descRes != 0) stringResource(descRes) else stringResource(R.string.challenge_default_description)
 
     val progress = when (challenge.type) {

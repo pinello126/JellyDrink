@@ -19,6 +19,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.jellydrink.app.data.repository.WaterRepository
+import com.jellydrink.app.domain.logic.GameConstants
 import com.jellydrink.app.notification.WaterNotificationHelper
 import com.jellydrink.app.ui.navigation.JellyDrinkNavGraph
 import com.jellydrink.app.ui.theme.JellyDrinkTheme
@@ -180,7 +181,7 @@ class MainActivity : ComponentActivity() {
                     applicationContext,
                     0,
                     2000,
-                    WaterRepository.DEFAULT_GLASSES
+                    GameConstants.DEFAULT_GLASSES
                 )
             }
         }
