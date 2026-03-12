@@ -181,14 +181,14 @@ class WaterRepository @Inject constructor(
 
         // Decorations
         val DECORATIONS = listOf(
-            DecorationInfo("fish_blue", "Pesciolino Blu", 100),
-            DecorationInfo("fish_orange", "Pesce Pagliaccio", 200),
-            DecorationInfo("starfish", "Stella Marina", 80),
-            DecorationInfo("coral_pink", "Corallo Rosa", 150),
-            DecorationInfo("treasure", "Forziere", 300),
-            DecorationInfo("turtle", "Tartaruga", 500),
-            DecorationInfo("seahorse", "Cavalluccio", 250),
-            DecorationInfo("crab", "Granchio", 120)
+            DecorationInfo("fish_blue", "Pesciolino Blu", 200),
+            DecorationInfo("fish_orange", "Pesce Pagliaccio", 400),
+            DecorationInfo("starfish", "Stella Marina", 150),
+            DecorationInfo("coral_pink", "Corallo Rosa", 300),
+            DecorationInfo("treasure", "Forziere", 600),
+            DecorationInfo("turtle", "Tartaruga", 1000),
+            DecorationInfo("seahorse", "Cavalluccio", 500),
+            DecorationInfo("crab", "Granchio", 250)
         )
 
         // All possible badges (nel companion per accesso statico)
